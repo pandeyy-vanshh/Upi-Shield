@@ -185,6 +185,32 @@
       visibility: hidden;
       pointer-events: none;
     }
+    #install-help-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(13, 12, 10, 0.72);
+      backdrop-filter: blur(10px);
+    }
+    #install-help-modal.hidden {
+      display: none;
+    }
+    .install-help-card {
+      width: min(440px, 100%);
+      border: 1px solid rgba(181, 148, 91, 0.36);
+      border-radius: 20px;
+      background: #FDFBF7;
+      color: #1C1A17;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      padding: 22px;
+    }
+    .dark .install-help-card {
+      background: #151310;
+      color: #F5F2EB;
+    }
     #opening-intro button {
       position: absolute;
       right: max(1rem, env(safe-area-inset-right));
@@ -379,6 +405,20 @@
   </style>
 </head>
 <body class="bg-ivory-100 text-[#1C1A17] dark:bg-obsidian-950 dark:text-[#EFECE4] font-sans antialiased selection:bg-champagne-500/20 selection:text-champagne-700 dark:selection:text-champagne-400 transition-colors duration-300 parchment-bg min-h-screen flex flex-col">
+
+  <div id="install-help-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="install-help-title">
+    <div class="install-help-card">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-champagne-700 dark:text-champagne-400">UPI Shield App</p>
+          <h2 id="install-help-title" class="mt-1 font-serif text-2xl font-bold">Install UPI Shield</h2>
+        </div>
+        <button id="close-install-help" type="button" aria-label="Close install instructions" class="w-9 h-9 shrink-0 rounded-full border border-ivory-300 dark:border-[#322D25] text-lg leading-none">×</button>
+      </div>
+      <p id="install-help-copy" class="mt-4 text-sm leading-6 text-[#6E675C] dark:text-[#C5BEB2]"></p>
+      <button id="install-help-dismiss" type="button" class="mt-5 w-full px-4 py-2.5 rounded-lg bg-[#1C1A17] text-[#FDFBF7] dark:bg-champagne-500 dark:text-[#14120F] text-xs font-bold">Got It</button>
+    </div>
+  </div>
 
   <!-- Full-screen Opening Animation -->
   <div id="opening-intro" role="dialog" aria-label="UPI Shield opening animation" aria-modal="true">
@@ -1323,6 +1363,10 @@
       const els = {
         themeToggle: document.getElementById('theme-toggle'),
         installAppBtn: document.getElementById('install-app-btn'),
+        installHelpModal: document.getElementById('install-help-modal'),
+        installHelpCopy: document.getElementById('install-help-copy'),
+        closeInstallHelp: document.getElementById('close-install-help'),
+        installHelpDismiss: document.getElementById('install-help-dismiss'),
         kioskToggleBtn: document.getElementById('kiosk-toggle-btn'),
         exitKioskBtn: document.getElementById('exit-kiosk-btn'),
         kioskBanner: document.getElementById('kiosk-banner'),
@@ -1551,9 +1595,25 @@
         els.installAppBtn?.classList.remove('hidden');
       });
 
+      function openInstallHelp(message) {
+        if (!els.installHelpModal || !els.installHelpCopy) return;
+        els.installHelpCopy.textContent = message;
+        els.installHelpModal.classList.remove('hidden');
+      }
+
+      function closeInstallHelp() {
+        els.installHelpModal?.classList.add('hidden');
+      }
+
+      els.closeInstallHelp?.addEventListener('click', closeInstallHelp);
+      els.installHelpDismiss?.addEventListener('click', closeInstallHelp);
+      els.installHelpModal?.addEventListener('click', (event) => {
+        if (event.target === els.installHelpModal) closeInstallHelp();
+      });
+
       els.installAppBtn?.addEventListener('click', async () => {
         if (isStandalone) {
-          showToast('UPI Shield is already installed.', 'success');
+          openInstallHelp('UPI Shield is already open in installed app mode.');
           return;
         }
         if (deferredInstallPrompt) {
@@ -1563,10 +1623,10 @@
           return;
         }
         if (isIos) {
-          showToast('On iPhone/iPad: tap Share, then Add to Home Screen.', 'info');
+          openInstallHelp('On iPhone or iPad, tap the Share button in Safari, scroll the menu, then choose “Add to Home Screen”.');
           return;
         }
-        showToast('Open the browser menu and choose Install App or Add to Home Screen.', 'info');
+        openInstallHelp('Open the browser menu (⋮ or Address Bar install icon), then choose “Install app”, “Install UPI Shield”, or “Add to Home Screen”. Installation requires the app to be opened over HTTPS.');
       });
 
       if (isStandalone) {
