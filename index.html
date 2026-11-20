@@ -1914,6 +1914,14 @@
         }
 
         hideUploadError();
+        els.ocrUtr.value = '';
+        els.ocrAmount.value = '';
+        els.ocrApp.value = 'Auto';
+        els.ocrTimestamp.value = '';
+        els.ocrExpectedPayee.value = '';
+        els.ocrChallengeRef.value = '';
+        state.ocrDetectedData = null;
+        state.currentImageLoaded = false;
         els.loadedFileInfo.textContent = `${file.name} • ${formatBytes(file.size)} • Processing...`;
         els.canvasWorkspace.classList.remove('hidden');
         els.imageMetaBadge.textContent = 'Analyzing evidence';
@@ -1932,6 +1940,32 @@
         } catch (error) {
           showUploadError(error.message || 'The receipt image could not be processed.');
         }
+      }
+
+      function createOcrCanvas(source, enhance = false) {
+        const sourceWidth = source.width || source.naturalWidth;
+        const sourceHeight = source.height || source.naturalHeight;
+        const scale = Math.min(2, 2200 / Math.max(sourceWidth, sourceHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+        canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+
+        const context = canvas.getContext('2d', { willReadFrequently: enhance });
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+        if (enhance) {
+          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          const pixels = imageData.data;
+          for (let i = 0; i < pixels.length; i += 4) {
+            const luminance = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+            const contrast = Math.max(0, Math.min(255, (luminance - 128) * 1.35 + 128));
+            pixels[i] = pixels[i + 1] = pixels[i + 2] = contrast;
+          }
+          context.putImageData(imageData, 0, 0);
+        }
+        return canvas;
       }
 
       async function processReceiptImage(image, options = {}) {
@@ -1997,37 +2031,71 @@
           els.ocrStatusPill.textContent = 'OCR RUNNING';
           if (typeof Tesseract !== 'undefined') {
             try {
-              const result = await Tesseract.recognize(els.previewCanvas, 'eng');
-              const text = result.data.text || '';
-              parseReceiptTranscript(text);
+              const primary = await Tesseract.recognize(createOcrCanvas(els.previewCanvas), 'eng');
+              let best = primary;
+              let bestData = extractReceiptData(primary.data.text || '');
+
+              if (!bestData.utr || !bestData.amount || (primary.data.confidence || 0) < 70) {
+                const enhanced = await Tesseract.recognize(createOcrCanvas(els.previewCanvas, true), 'eng');
+                const enhancedData = extractReceiptData(enhanced.data.text || '');
+                const primaryScore = (bestData.utr ? 3 : 0) + (bestData.amount ? 3 : 0) + (bestData.app !== 'Auto' ? 1 : 0) + (primary.data.confidence || 0) / 100;
+                const enhancedScore = (enhancedData.utr ? 3 : 0) + (enhancedData.amount ? 3 : 0) + (enhancedData.app !== 'Auto' ? 1 : 0) + (enhanced.data.confidence || 0) / 100;
+                if (enhancedScore > primaryScore) {
+                  best = enhanced;
+                  bestData = enhancedData;
+                }
+              }
+
+              parseReceiptTranscript(best.data.text || '', best.data.confidence || 0, bestData);
+              runZeroTrustEvaluation({ autoFromReceipt: true });
             } catch (error) {
               els.ocrStatusPill.textContent = 'OCR UNAVAILABLE';
-              els.ocrRawText.textContent = 'OCR could not read this image. Enter the UTR and amount manually.';
+              els.ocrRawText.textContent = 'OCR could not read this image. The result is inconclusive; confirm settlement in your bank app or statement.';
+              runZeroTrustEvaluation({ autoFromReceipt: true });
             }
           } else {
             els.ocrStatusPill.textContent = 'OCR UNAVAILABLE';
+            els.ocrRawText.textContent = 'OCR service is unavailable. The result is inconclusive; confirm settlement in your bank app or statement.';
+            runZeroTrustEvaluation({ autoFromReceipt: true });
           }
         } else {
           els.ocrStatusPill.textContent = 'DEMO DATA';
         }
       }
 
-      function parseReceiptTranscript(text) {
-        els.ocrRawText.textContent = text.trim() || 'No readable OCR text found.';
-        const utrMatch = text.match(/\b(?:UTR|RRN|Ref(?:erence)?(?: ID)?|transaction ID)?\b[^0-9]*([0-9]{12})\b/i)
-          || text.match(/\b(\d{12})\b/);
+      function extractReceiptData(text) {
+        const normalizedText = text.replace(/[‐‑‒–—]/g, '-');
+        const normalizeDigits = (value) => value.replace(/[Oo]/g, '0').replace(/[Il|]/g, '1').replace(/[^0-9]/g, '');
+        const utrCandidates = [];
+        const utrLabelPattern = /\b(?:UTR|RRN|reference(?:\s*(?:number|no|id))?|transaction\s*(?:id|number|no)|UPI\s*(?:ref|reference|transaction\s*id))\b/ig;
+        let labelMatch;
+        while ((labelMatch = utrLabelPattern.exec(normalizedText)) !== null) {
+          const nearby = normalizedText.slice(labelMatch.index, labelMatch.index + 90);
+          const nearbyNumbers = nearby.match(/[0-9OIl|][0-9OIl|\s-]{9,24}/g) || [];
+          nearbyNumbers.forEach((candidate) => {
+            const digits = normalizeDigits(candidate);
+            if (digits.length === 12) utrCandidates.push({ utr: digits, labeled: true, position: labelMatch.index });
+          });
+        }
+        const allNumbers = normalizedText.match(/[0-9OIl|][0-9OIl|\s-]{11,24}/g) || [];
+        allNumbers.forEach((candidate) => {
+          const digits = normalizeDigits(candidate);
+          if (digits.length === 12) utrCandidates.push({ utr: digits, labeled: false, position: normalizedText.indexOf(candidate) });
+        });
+        utrCandidates.sort((a, b) => Number(b.labeled) - Number(a.labeled) || a.position - b.position);
+
         const amountCandidates = [];
-        const amountRegex = /(?:₹|Rs\.?|INR)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)|\b(?:paid|payment|amount|credited)\b[^0-9]{0,20}([0-9][0-9,]*(?:\.[0-9]{1,2})?)\b/gi;
+        const amountRegex = /(?:₹|rs\.?|inr)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)|\b(?:paid|payment|amount|credited|transfer)\b[^0-9]{0,28}([0-9][0-9,]*(?:\.[0-9]{1,2})?)\b/gi;
         let amountMatch;
-        while ((amountMatch = amountRegex.exec(text)) !== null) {
+        while ((amountMatch = amountRegex.exec(normalizedText)) !== null) {
           const rawAmount = amountMatch[1] || amountMatch[2];
           const value = parseFloat(rawAmount.replace(/,/g, ''));
           if (Number.isFinite(value) && value > 0) {
             const position = amountMatch.index;
-            const context = text.slice(Math.max(0, position - 24), Math.min(text.length, position + 40)).toLowerCase();
+            const context = normalizedText.slice(Math.max(0, position - 30), Math.min(normalizedText.length, position + 50)).toLowerCase();
             let priority = 1;
             if (/paid|payment|transaction amount|credited|transfer amount/.test(context)) priority += 3;
-            if (/balance|available|limit|bank account/.test(context)) priority -= 2;
+            if (/balance|available|limit|bank account|account number/.test(context)) priority -= 4;
             amountCandidates.push({ value, priority, position });
           }
         }
@@ -2039,17 +2107,31 @@
           ['PhonePe', /phonepe/i],
           ['Paytm', /paytm/i],
           ['CRED', /cred/i],
+          ['Amazon Pay', /amazon\s*pay/i],
           ['BHIM', /bhim/i]
         ];
         const app = appPatterns.find(([, pattern]) => pattern.test(text))?.[0] || 'Unknown PSP';
-        const utr = utrMatch ? utrMatch[1] : '';
-        const success = /paid|successful|completed|credited|success/i.test(text);
+        const utr = utrCandidates[0]?.utr || '';
+        return {
+          utr,
+          amount: Number.isFinite(amount) ? amount : null,
+          app,
+          hasSuccessKeyword: /\bpaid\b|\bsuccessful\b|\bcompleted\b|\bcredited\b|\bsuccess\b/i.test(text),
+          hasFailureKeyword: /\bpending\b|\bfailed\b|\bfailure\b|\bdeclined\b|\bprocessing\b/i.test(text)
+        };
+      }
+
+      function parseReceiptTranscript(text, confidence = 0, extracted = extractReceiptData(text)) {
+        els.ocrRawText.textContent = text.trim() || 'No readable OCR text found.';
+        const { utr, amount, app, hasSuccessKeyword, hasFailureKeyword } = extracted;
 
         if (utr) els.ocrUtr.value = utr;
         if (Number.isFinite(amount)) els.ocrAmount.value = amount.toFixed(2);
-        els.ocrApp.value = app;
-        state.ocrDetectedData = { rawText: text, utr, amount: Number.isFinite(amount) ? amount : null, hasSuccessKeyword: success };
-        els.ocrStatusPill.textContent = utr || Number.isFinite(amount) ? 'OCR EXTRACTED' : 'MANUAL REVIEW';
+        els.ocrApp.value = app === 'Unknown PSP' ? 'Auto' : app;
+        state.ocrDetectedData = { rawText: text, utr, amount, app, hasSuccessKeyword, hasFailureKeyword, confidence };
+        els.ocrStatusPill.textContent = utr && Number.isFinite(amount)
+          ? `OCR EXTRACTED • ${Math.round(confidence)}%`
+          : 'OCR REVIEW • RESULT INCONCLUSIVE';
       }
 
       els.fileInput.addEventListener('change', (e) => {
@@ -2467,31 +2549,40 @@
         event.target.value = '';
       });
 
-      function runZeroTrustEvaluation() {
+      function runZeroTrustEvaluation({ autoFromReceipt = false } = {}) {
         const directMode = state.activeMode === 'utr';
         const utr = directMode ? els.utrNumber.value.trim() : els.ocrUtr.value.trim();
         const amountValue = directMode ? parseFloat(els.utrAmount.value) : parseFloat(els.ocrAmount.value);
         const app = directMode ? els.utrApp.value : els.ocrApp.value;
         const timestampValue = directMode ? els.utrTimestamp.value : els.ocrTimestamp.value;
-        const amount = Number.isFinite(amountValue) ? amountValue : 0;
+        const hasValidUtr = /^\d{12}$/.test(utr);
+        const hasValidAmount = Number.isFinite(amountValue) && amountValue > 0;
+        const amount = hasValidAmount ? amountValue : null;
 
-        if (!/^\d{12}$/.test(utr)) {
+        if (!autoFromReceipt && !hasValidUtr) {
           showToast('A valid 12-digit UTR / UPI reference is required.', 'warning');
           return;
         }
-        if (!(amount > 0)) {
+        if (!autoFromReceipt && !hasValidAmount) {
           showToast('A valid settlement amount is required.', 'warning');
           return;
         }
 
-        const ledgerMatch = state.settledCredits.find((credit) => credit.utr === utr);
+        const ledgerMatch = hasValidUtr ? state.settledCredits.find((credit) => credit.utr === utr) : null;
         let ledgerState = 'EMPTY';
         let ledgerStatus = 'NO LEDGER';
-        let ledgerDesc = 'No authoritative bank settlement record was provided.';
+        let ledgerDesc = hasValidUtr
+          ? 'No authoritative bank settlement record was provided.'
+          : 'OCR did not reliably extract a UTR, so bank-ledger matching was not possible.';
         let ledgerScore = 0;
 
         if (ledgerMatch) {
-          if (Math.abs(ledgerMatch.amount - amount) < 0.005) {
+          if (!hasValidAmount) {
+            ledgerState = 'INCOMPLETE';
+            ledgerStatus = 'AMOUNT NOT READ';
+            ledgerDesc = `UTR ${utr} appears in the bank ledger, but OCR could not read the receipt amount for comparison.`;
+            ledgerScore = 35;
+          } else if (Math.abs(ledgerMatch.amount - amount) < 0.005) {
             ledgerState = 'MATCHED';
             ledgerStatus = 'MATCHED';
             ledgerDesc = `Bank ledger confirms ₹${amount.toFixed(2)} for UTR ${utr}.`;
@@ -2502,7 +2593,7 @@
             ledgerDesc = `UTR exists, but the bank ledger shows ₹${ledgerMatch.amount.toFixed(2)} rather than ₹${amount.toFixed(2)}.`;
             ledgerScore = 15;
           }
-        } else if (state.settledCredits.length > 0) {
+        } else if (state.settledCredits.length > 0 && hasValidUtr) {
           ledgerState = 'NOT_FOUND';
           ledgerStatus = 'NOT FOUND';
           ledgerDesc = 'The UTR was not found in the provided bank credit ledger.';
@@ -2529,18 +2620,20 @@
           ? `${app} recognized as a supported PSP vocabulary.`
           : 'PSP/app identity is unknown or could not be extracted reliably.';
 
-        const utrScore = /^\d{12}$/.test(utr) ? 95 : 10;
-        const utrDesc = /^\d{12}$/.test(utr)
+        const utrScore = hasValidUtr ? 95 : 10;
+        const utrDesc = hasValidUtr
           ? `UTR ${utr} has the required 12-digit NPCI reference format.`
-          : 'The UTR is missing or has an invalid length.';
+          : 'OCR could not reliably read a 12-digit UTR from this image.';
 
         const elaScore = optionsForElaScore();
         const elaDesc = state.binaryMetaAudit?.matchedSignatures?.some((s) => /Photoshop|Manual/i.test(s))
           ? 'Manual edit indicators were detected in the supplied evidence.'
           : 'Automatic texture/zone scan found no strong local editing anomaly.';
 
-        let timeScore = 75;
-        let timeDesc = 'Timestamp is present but cannot prove authenticity by itself.';
+        let timeScore = autoFromReceipt ? 70 : 75;
+        let timeDesc = autoFromReceipt
+          ? 'No transaction timestamp was confidently extracted from the receipt.'
+          : 'Timestamp is present but cannot prove authenticity by itself.';
         if (timestampValue) {
           const timestamp = new Date(timestampValue);
           if (Number.isFinite(timestamp.getTime())) {
@@ -2556,7 +2649,7 @@
               timeDesc = 'Voucher timestamp appears to be in the future.';
             }
           }
-        } else {
+        } else if (!autoFromReceipt) {
           timeScore = 20;
           timeDesc = 'Voucher timestamp is missing.';
         }
@@ -2580,20 +2673,21 @@
           }
         }
 
-        const redFlags = ledgerState !== 'MATCHED'
+        const explicitFailure = !directMode && state.ocrDetectedData?.hasFailureKeyword;
+        const strongFraudFlags = ledgerState === 'NOT_FOUND'
+          || ledgerState === 'AMOUNT_MISMATCH'
           || metaScore < 50
-          || pspScore < 50
-          || utrScore < 50
           || elaScore < 50
-          || timeScore < 50
-          || challengeState === 'MISMATCH';
+          || (Boolean(timestampValue) && timeScore < 50)
+          || challengeState === 'MISMATCH'
+          || explicitFailure;
         const allChecks = [ledgerScore, metaScore, pspScore, utrScore, elaScore, timeScore, challengeState === 'NONE' ? 70 : challengeScore];
         const composite = Math.round(allChecks.reduce((sum, score) => sum + score, 0) / allChecks.length);
         let tier = 'UNCONFIRMED';
 
         if (ledgerState === 'MATCHED' && metaScore >= 70 && pspScore >= 75 && utrScore >= 75 && elaScore >= 70 && timeScore >= 50) {
           tier = 'VERIFIED_GENUINE';
-        } else if (redFlags && (ledgerState !== 'EMPTY' || metaScore < 50 || utrScore < 50 || elaScore < 50 || timeScore < 50)) {
+        } else if (strongFraudFlags) {
           tier = 'TAMPERED_OR_FAKE';
         }
 
@@ -2601,8 +2695,11 @@
           composite,
           tier,
           utr,
-          amount: amount.toFixed(2),
+          amount: hasValidAmount ? amount.toFixed(2) : null,
           app,
+          autoFromReceipt,
+          hasValidUtr,
+          hasValidAmount,
           ledgerState,
           ledgerStatus,
           ledgerDesc,
@@ -2681,17 +2778,21 @@
         let tone = 'warning';
 
         if (data.tier === 'VERIFIED_GENUINE') {
-          verdict = 'VERIFIED GENUINE — SETTLED IN BANK (100%)';
-          summary = '100% Confirmed! Receipt passed all 7 forensic checks AND matched an authoritative credit entry in your own Bank SMS / Statement Ledger.';
+          verdict = 'VERIFIED GENUINE — BANK MATCH';
+          summary = 'The extracted UTR and amount matched an authoritative credit entry in your bank SMS or statement, and the required screening checks passed.';
           ringColor = 'text-emerald-500';
           badgeClasses = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-400/50';
           tone = 'verified';
         } else if (data.tier === 'TAMPERED_OR_FAKE') {
           verdict = 'HIGH RISK — FAKE / UNSETTLED RECEIPT (DO NOT ACCEPT)';
-          summary = 'FRAUD / REJECTION ALERT: Triggered one or more red flags (Pending/Failed status, AI/edited image texture, old payment date, payee/VPA mismatch, missing/invalid 12-digit UTR, or absent from Bank Ledger). DO NOT RELEASE GOODS!';
+          summary = 'High-risk indicators were detected, such as a failed or pending status, a confirmed bank-ledger mismatch, an edit signature, or a provided timestamp/challenge mismatch. Confirm directly with your bank before acting.';
           ringColor = 'text-rose-500';
           badgeClasses = 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30';
           tone = 'danger';
+        } else if (data.autoFromReceipt && (!data.hasValidUtr || !data.hasValidAmount)) {
+          summary = 'The receipt was scanned automatically, but OCR could not confidently read both the UTR and amount. This is inconclusive, not proof of fraud. Retake a clearer photo or confirm the credit in your bank app or statement.';
+        } else if (data.autoFromReceipt) {
+          summary = 'Receipt details were extracted automatically. A screenshot cannot confirm settlement; verify the UTR and amount against your bank app, bank SMS, or statement before accepting payment.';
         }
 
         playAuditTone(tone);
@@ -2701,8 +2802,8 @@
         els.verdictBadge.textContent = verdict;
         els.verdictSummary.textContent = summary;
 
-        els.repUtr.textContent = data.utr;
-        els.repAmount.textContent = `₹${data.amount} (${data.app})`;
+        els.repUtr.textContent = data.utr || 'Not read from receipt';
+        els.repAmount.textContent = data.amount ? `₹${data.amount} (${data.app})` : `Not read from receipt (${data.app})`;
 
         // Pillar 1: Bank Ledger
         els.descLedger.textContent = data.ledgerDesc;
@@ -2749,7 +2850,7 @@
           amount: data.amount,
           ledger: data.ledgerState,
           score,
-          verdict: data.tier === 'VERIFIED_GENUINE' ? 'GENUINE 100%' : (data.tier === 'TAMPERED_OR_FAKE' ? 'FAKE / REJECT' : 'UNCONFIRMED')
+          verdict: data.tier === 'VERIFIED_GENUINE' ? 'VERIFIED GENUINE' : (data.tier === 'TAMPERED_OR_FAKE' ? 'FAKE / REJECT' : 'UNCONFIRMED')
         });
         renderAuditLogTable();
 
@@ -2977,8 +3078,8 @@
           return `
             <tr class="hover:bg-ivory-100/70 dark:hover:bg-obsidian-850/60 transition">
               <td class="py-2.5 px-4 font-mono text-[#6E675C] dark:text-[#9A9284]">${row.time}</td>
-              <td class="py-2.5 px-4 font-mono font-semibold">${row.utr}</td>
-              <td class="py-2.5 px-4 font-mono">${row.amount}</td>
+              <td class="py-2.5 px-4 font-mono font-semibold">${row.utr || 'Not detected'}</td>
+              <td class="py-2.5 px-4 font-mono">${row.amount ?? 'Not detected'}</td>
               <td class="py-2.5 px-4 font-mono text-[11px]">${row.ledger}</td>
               <td class="py-2.5 px-4 font-mono font-bold">${row.score}%</td>
               <td class="py-2.5 px-4">

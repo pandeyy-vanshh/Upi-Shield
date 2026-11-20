@@ -1,4 +1,4 @@
-const CACHE_NAME = 'upi-shield-v3';
+const CACHE_NAME = 'upi-shield-v4';
 const CORE_ASSETS = ['./', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
