@@ -420,6 +420,11 @@
         padding: 0 !important;
         justify-content: center;
       }
+      header #sound-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
       header #kiosk-toggle-btn span,
       header #install-app-btn span {
         display: none !important;
@@ -661,7 +666,7 @@
           <span class="hidden sm:inline">Counter Mode</span>
         </button>
 
-        <button id="sound-toggle-btn" type="button" title="Toggle Acoustic Alerts" class="p-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-champagne-600 dark:text-champagne-400 border border-ivory-300 dark:border-[#2C2821] transition">
+        <button id="sound-toggle-btn" type="button" title="Toggle Acoustic Alerts" class="inline-flex items-center justify-center p-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-champagne-600 dark:text-champagne-400 border border-ivory-300 dark:border-[#2C2821] transition">
           <svg id="icon-sound-on" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
