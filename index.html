@@ -1722,7 +1722,23 @@
         els.ocrRawText.textContent = text.trim() || 'No readable OCR text found.';
         const utrMatch = text.match(/\b(?:UTR|RRN|Ref(?:erence)?(?: ID)?|transaction ID)?\b[^0-9]*([0-9]{12})\b/i)
           || text.match(/\b(\d{12})\b/);
-        const amountMatch = text.match(/(?:₹|Rs\.?|INR)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i);
+        const amountCandidates = [];
+        const amountRegex = /(?:₹|Rs\.?|INR)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)|\b(?:paid|payment|amount|credited)\b[^0-9]{0,20}([0-9][0-9,]*(?:\.[0-9]{1,2})?)\b/gi;
+        let amountMatch;
+        while ((amountMatch = amountRegex.exec(text)) !== null) {
+          const rawAmount = amountMatch[1] || amountMatch[2];
+          const value = parseFloat(rawAmount.replace(/,/g, ''));
+          if (Number.isFinite(value) && value > 0) {
+            const position = amountMatch.index;
+            const context = text.slice(Math.max(0, position - 24), Math.min(text.length, position + 40)).toLowerCase();
+            let priority = 1;
+            if (/paid|payment|transaction amount|credited|transfer amount/.test(context)) priority += 3;
+            if (/balance|available|limit|bank account/.test(context)) priority -= 2;
+            amountCandidates.push({ value, priority, position });
+          }
+        }
+        amountCandidates.sort((a, b) => b.priority - a.priority || a.position - b.position);
+        const amount = amountCandidates.length ? amountCandidates[0].value : NaN;
         const appPatterns = [
           ['Navi UPI', /navi/i],
           ['GPay', /google pay|gpay/i],
@@ -2393,7 +2409,7 @@
         els.verdictSummary.textContent = summary;
 
         els.repUtr.textContent = data.utr;
-        els.repAmount.textContent = `${data.amount} (${data.app})`;
+        els.repAmount.textContent = `₹${data.amount} (${data.app})`;
 
         // Pillar 1: Bank Ledger
         els.descLedger.textContent = data.ledgerDesc;
