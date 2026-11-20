@@ -12,8 +12,2432 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            ivory: {
+              50: '#FDFBF7',
+              100: '#F5F2EB',
+              200: '#ECE6DA',
+              300: '#DFD7C8',
+            },
+            obsidian: {
+              850: '#1B1915',
+              900: '#151310',
+              950: '#0D0C0A',
+            },
+            champagne: {
+              400: '#D4B684',
+              500: '#B5945B',
+              600: '#9A7B4F',
+              700: '#7D623C',
+            },
+            heritage: {
+              600: '#24664A',
+              700: '#1B4F39',
+            },
+            oxblood: {
+              600: '#992B3B',
+              700: '#7D212E',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @keyframes scanLaser {
+      0% { top: 0%; opacity: 0.3; }
+      50% { top: 96%; opacity: 0.95; }
+      100% { top: 0%; opacity: 0.3; }
+    }
+    .scan-laser {
+      animation: scanLaser 2.2s ease-in-out infinite;
+      box-shadow: 0 0 20px 2px rgba(181, 148, 91, 0.75);
+    }
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes crestGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(181, 148, 91, 0.25);
+      }
+      50% {
+        box-shadow: 0 0 18px 3px rgba(181, 148, 91, 0.38);
+      }
+    }
+    @keyframes goldShimmer {
+      0% { transform: translateX(-120%) skewX(-18deg); }
+      100% { transform: translateX(260%) skewX(-18deg); }
+    }
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes pillarReveal {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    .animate-reveal {
+      animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .animate-delay-1 { animation-delay: 0.06s; }
+    .animate-delay-2 { animation-delay: 0.12s; }
+    .animate-delay-3 { animation-delay: 0.18s; }
+    .animate-crest {
+      animation: crestGlow 3.6s ease-in-out infinite;
+    }
+    .animate-float {
+      animation: gentleFloat 3.4s ease-in-out infinite;
+    }
+    .luxury-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .luxury-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 248, 231, 0.24), transparent);
+      transform: translateX(-120%) skewX(-18deg);
+      pointer-events: none;
+    }
+    .luxury-shimmer:hover::after {
+      animation: goldShimmer 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .luxury-card {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease;
+    }
+    .luxury-card:hover {
+      border-color: rgba(181, 148, 91, 0.45);
+      box-shadow: 0 10px 28px -12px rgba(28, 26, 23, 0.12);
+    }
+    .dark .luxury-card:hover {
+      box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+    }
+    .pillar-item {
+      opacity: 0;
+    }
+    .pillar-item.is-visible {
+      animation: pillarReveal 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .animate-reveal, .animate-crest, .animate-float, .pillar-item.is-visible, .scan-laser {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+    #opening-intro {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(181, 148, 91, 0.10), transparent 26rem),
+        linear-gradient(145deg, #151310 0%, #0D0C0A 65%, #1B1915 100%);
+      transition: opacity 0.65s ease, visibility 0.65s ease;
+    }
+    #opening-intro::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(181, 148, 91, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(181, 148, 91, 0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, #000 10%, transparent 72%);
+    }
+    #opening-intro.is-leaving {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    #opening-intro button {
+      position: absolute;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      z-index: 2;
+      min-height: 44px;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(212, 182, 132, 0.5);
+      border-radius: 9999px;
+      background: rgba(13, 12, 10, 0.72);
+      color: #FDFBF7;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+    }
+    .upi-splash-screen {
+      position: relative;
+      width: min(520px, calc(100vw - 32px));
+      min-height: 420px;
+      padding: 48px 32px 36px;
+      border: 1px solid rgba(181, 148, 91, 0.24);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.48), inset 0 1px rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .upi-splash-screen::before,
+    .upi-splash-screen::after {
+      content: '';
+      position: absolute;
+      width: 180px;
+      height: 1px;
+      top: 78px;
+      background: linear-gradient(90deg, transparent, rgba(181, 148, 91, 0.38), transparent);
+    }
+    .upi-splash-screen::before { left: -10px; }
+    .upi-splash-screen::after { right: -10px; }
+    .upi-logo-card {
+      position: relative;
+      z-index: 3;
+      width: 104px;
+      height: 104px;
+      border-radius: 26px;
+      background: #1C1A17;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(181, 148, 91, 0.58);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.36), 0 0 34px rgba(181, 148, 91, 0.10);
+      transform: scale(0.82) translateY(16px);
+      opacity: 0;
+      animation: upiCardEntrance 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .upi-logo-card::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(181, 148, 91, 0.14);
+      border-radius: 20px;
+    }
+    .upi-shield-svg {
+      width: 52px;
+      height: 52px;
+      color: #D4B684;
+      filter: drop-shadow(0 6px 14px rgba(181, 148, 91, 0.12));
+      stroke-dasharray: 120;
+      stroke-dashoffset: 120;
+      animation: upiDrawStroke 0.9s ease-out 0.25s forwards;
+    }
+    .upi-brand-text {
+      position: relative;
+      z-index: 3;
+      margin-top: 24px;
+      color: #F5F2EB;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: upiTextReveal 0.6s ease-out 0.55s forwards;
+    }
+    .upi-tagline {
+      position: relative;
+      z-index: 3;
+      margin-top: 10px;
+      color: #A8A093;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.19em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: upiTextReveal 0.6s ease-out 0.75s forwards;
+    }
+    .upi-progress {
+      position: relative;
+      z-index: 3;
+      width: 154px;
+      height: 2px;
+      margin-top: 28px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(181, 148, 91, 0.12);
+      opacity: 0;
+      animation: upiTextReveal 0.4s ease-out 0.95s forwards;
+    }
+    .upi-progress::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 46%;
+      border-radius: inherit;
+      background: #B5945B;
+      transform: translateX(-110%);
+      animation: upiProgress 1.8s cubic-bezier(0.22, 1, 0.36, 1) 1.05s forwards;
+    }
+    .upi-secure-badge {
+      position: relative;
+      z-index: 3;
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #9A9284;
+      font-size: 12px;
+      opacity: 0;
+      animation: upiTextReveal 0.6s ease-out 1.05s forwards;
+    }
+    @keyframes upiCardEntrance {
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    @keyframes upiDrawStroke {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes upiTextReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes upiProgress {
+      to { transform: translateX(230%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #opening-intro {
+        transition: none;
+      }
+    }
+    .parchment-bg {
+      background-image:
+        radial-gradient(at 15% 0%, rgba(181, 148, 91, 0.08) 0px, transparent 55%),
+        radial-gradient(at 85% 100%, rgba(36, 102, 74, 0.05) 0px, transparent 55%);
+    }
+    body.kiosk-active header,
+    body.kiosk-active #audit-log-section,
+    body.kiosk-active #kpi-strip {
+      display: none !important;
+    }
+    body.kiosk-active main {
+      max-width: 100% !important;
+      padding-top: 1rem !important;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(154, 123, 79, 0.3);
+      border-radius: 9999px;
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-report, #printable-report * { visibility: visible; }
+      #printable-report {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #FDFBF7 !important;
+        color: #1A1816 !important;
+        border: 1px solid #DFD7C8 !important;
+      }
+    }
+  </style>
 </head>
-<body>
-  <h1>UPI Shield</h1>
+<body class="bg-ivory-100 text-[#1C1A17] dark:bg-obsidian-950 dark:text-[#EFECE4] font-sans antialiased selection:bg-champagne-500/20 selection:text-champagne-700 dark:selection:text-champagne-400 transition-colors duration-300 parchment-bg min-h-screen flex flex-col">
+
+  <!-- Full-screen Opening Animation -->
+  <div id="opening-intro" role="dialog" aria-label="UPI Shield opening animation" aria-modal="true">
+    <div class="upi-splash-screen">
+      <div class="upi-logo-card">
+        <svg class="upi-shield-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      </div>
+      <div class="upi-brand-text">UPI Shield</div>
+      <div class="upi-tagline">Private Settlement &amp; Forensic Verification</div>
+      <div class="upi-progress" aria-hidden="true"></div>
+      <div class="upi-secure-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="4" y="10" width="16" height="10" rx="2" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+        </svg>
+        On-device private verification
+      </div>
+    </div>
+    <button id="opening-intro-skip" type="button" aria-label="Skip opening animation">Skip Intro</button>
+  </div>
+
+  <!-- Full-Window Drag-and-Drop Overlay -->
+  <div id="global-drop-overlay" class="hidden fixed inset-0 z-50 bg-[#14120F]/85 backdrop-blur-md border border-dashed border-champagne-400/80 flex items-center justify-center p-6 pointer-events-none">
+    <div class="text-center space-y-3 max-w-md p-9 rounded-2xl bg-obsidian-900/95 border border-champagne-500/30 shadow-2xl">
+      <div class="mx-auto w-14 h-14 rounded-full bg-champagne-500/15 border border-champagne-500/40 text-champagne-400 flex items-center justify-center">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+      </div>
+      <h3 class="font-serif text-2xl font-semibold tracking-tight text-[#F5F2EB]">Present Payment Voucher</h3>
+      <p class="text-xs text-[#A8A093] tracking-wide">PNG, JPG, WEBP, HEIC & AVIF • Private Client-Side Verification</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Kiosk Mode Banner -->
+  <div id="kiosk-banner" class="hidden sticky top-0 z-50 bg-[#1A1815] text-champagne-400 border-b border-champagne-500/30 px-5 py-2.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center gap-2.5 text-xs font-medium tracking-widest uppercase">
+      <span class="w-2 h-2 rounded-full bg-champagne-400 animate-ping"></span>
+      <span>Private Counter Terminal Active — Acoustic Alerts Enabled</span>
+    </div>
+    <button id="exit-kiosk-btn" type="button" class="px-3.5 py-1 rounded-md bg-obsidian-850 hover:bg-obsidian-800 text-[#EFECE4] text-xs font-medium border border-[#322D25] transition">
+      Exit Terminal
+    </button>
+  </div>
+
+  <!-- Top Editorial Private Banking Header -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-ivory-50/90 dark:bg-obsidian-950/90 border-b border-ivory-300 dark:border-[#26231D]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#1C1A17] dark:bg-champagne-500/15 border border-champagne-600/40 text-champagne-400 shadow-2xs animate-crest">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="font-serif font-bold text-xl sm:text-2xl tracking-tight text-[#1A1816] dark:text-[#F5F2EB]">UPI Shield</span>
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium uppercase tracking-widest bg-champagne-500/10 text-champagne-700 dark:text-champagne-400 border border-champagne-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-champagne-600 dark:bg-champagne-400"></span>
+              Est. Forensic Ledger v5
+            </span>
+          </div>
+          <p class="text-[11px] text-[#6E675C] dark:text-[#9A9284] hidden sm:block tracking-wide">Private Settlement Clearing, OCR Telemetry & Voucher Forensics</p>
+        </div>
+      </div>
+
+      <!-- Right Utility Controls -->
+      <div class="flex items-center gap-2">
+        <button id="kiosk-toggle-btn" type="button" class="px-3 py-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-[#3B362F] dark:text-[#DFD9CE] border border-ivory-300 dark:border-[#2C2821] text-xs font-medium flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5 text-champagne-600 dark:text-champagne-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <span class="hidden sm:inline">Counter Mode</span>
+        </button>
+
+        <button id="sound-toggle-btn" type="button" title="Toggle Acoustic Alerts" class="p-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-champagne-600 dark:text-champagne-400 border border-ivory-300 dark:border-[#2C2821] transition">
+          <svg id="icon-sound-on" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+          <svg id="icon-sound-off" class="w-4 h-4 hidden text-[#8C8477]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+        </button>
+
+        <button id="theme-toggle" type="button" aria-label="Toggle Alabaster/Obsidian Theme" class="p-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-[#3B362F] dark:text-[#DFD9CE] border border-ivory-300 dark:border-[#2C2821] transition">
+          <svg id="icon-sun" class="w-4 h-4 hidden dark:block text-champagne-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+          <svg id="icon-moon" class="w-4 h-4 block dark:hidden text-[#3B362F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+
+    <!-- Fiduciary Governance & Status Strip -->
+    <div id="kpi-strip" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 animate-reveal">
+      <details class="md:col-span-8 group luxury-card rounded-xl bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#26231D] px-4 py-3 shadow-2xs">
+        <summary class="list-none flex items-center justify-between gap-3 cursor-pointer select-none">
+          <div class="flex items-center gap-2.5 text-xs">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-champagne-500/15 text-champagne-700 dark:text-champagne-400 border border-champagne-500/30 shrink-0">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+              </svg>
+            </span>
+            <span class="font-semibold text-[#1C1A17] dark:text-[#EFECE4]">Fiduciary Zero-Trust Mandate</span>
+            <span class="hidden sm:inline text-[#6E675C] dark:text-[#9A9284]">— Visual vouchers never clear at 100% without authoritative Bank Ledger confirmation.</span>
+          </div>
+          <span class="text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <div class="pt-3 mt-3 border-t border-ivory-200 dark:border-[#26231D] grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px] text-[#5C564C] dark:text-[#A8A093]">
+          <div class="p-2.5 rounded-lg bg-ivory-100/80 dark:bg-obsidian-950 border border-ivory-300/80 dark:border-[#26231D]">
+            <strong class="text-[#1C1A17] dark:text-[#EFECE4] block mb-0.5">I. Settlement & Status Lock</strong>
+            Rejects Pending/Failed vouchers and requires matching Bank SMS, Statement CSV, or Soundbox credit.
+          </div>
+          <div class="p-2.5 rounded-lg bg-ivory-100/80 dark:bg-obsidian-950 border border-ivory-300/80 dark:border-[#26231D]">
+            <strong class="text-[#1C1A17] dark:text-[#EFECE4] block mb-0.5">II. Anti-Spoof & Anti-AI Scan</strong>
+            Detects spoof-app typos, AI diffusion grain, EXIF editor tags, and stale replay timestamps.
+          </div>
+          <div class="p-2.5 rounded-lg bg-ivory-100/80 dark:bg-obsidian-950 border border-ivory-300/80 dark:border-[#26231D]">
+            <strong class="text-[#1C1A17] dark:text-[#EFECE4] block mb-0.5">III. 12-Digit NPCI RRN Audit</strong>
+            Validates RRN structure across Navi (@naviaxis), GPay, PhonePe, Paytm, CRED & BHIM.
+          </div>
+        </div>
+      </details>
+      <div class="md:col-span-4 luxury-card rounded-xl bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#26231D] px-4 py-3 flex items-center justify-between text-xs shadow-2xs">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[#8C8477] block">Custody & Privacy</span>
+          <span class="font-semibold text-[#1C1A17] dark:text-[#EFECE4]">Air-Gapped Local • SHA-256</span>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-heritage-600/10 text-heritage-700 dark:text-[#58B38B] font-mono text-[10px] font-semibold uppercase tracking-widest border border-heritage-600/25">
+          <span class="w-1.5 h-1.5 rounded-full bg-heritage-600 dark:bg-[#58B38B] animate-pulse"></span>
+          ACTIVE
+        </span>
+      </div>
+    </div>
+
+    <!-- Mode Navigation Bar & Benchmark Scenarios -->
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 bg-ivory-50 dark:bg-obsidian-900 p-3 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs luxury-card animate-reveal animate-delay-1">
+      <div class="grid grid-cols-3 sm:inline-flex p-1 rounded-lg bg-ivory-100 dark:bg-obsidian-950 border border-ivory-300/80 dark:border-[#26231D] gap-1">
+        <button id="tab-receipt" type="button" class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-md text-xs font-semibold transition-all bg-ivory-50 dark:bg-obsidian-850 text-champagne-700 dark:text-champagne-400 shadow-2xs border border-ivory-300/70 dark:border-[#322D25]">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="m21 15-5-5L5 21" />
+          </svg>
+          <span>Voucher Scanner</span>
+        </button>
+        <button id="tab-qr" type="button" class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-md text-xs font-semibold transition-all text-[#6E675C] dark:text-[#9A9284] hover:text-[#1C1A17] dark:hover:text-[#EFECE4]">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 19h2v2h-2zM19 14h2v2h-2z" />
+          </svg>
+          <span>Dynamic QR</span>
+        </button>
+        <button id="tab-utr" type="button" class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-md text-xs font-semibold transition-all text-[#6E675C] dark:text-[#9A9284] hover:text-[#1C1A17] dark:hover:text-[#EFECE4]">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <path d="M9 12h6M9 16h6M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+            <polyline points="13 2 13 9 20 9" />
+          </svg>
+          <span>Direct UTR Audit</span>
+        </button>
+      </div>
+
+      <!-- Benchmark Specimen Presets -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[#8C8477] mr-1">Specimens:</span>
+        <button id="demo-navi-upi" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-heritage-600/10 hover:bg-heritage-600/15 text-heritage-700 dark:text-[#63BE96] border border-heritage-600/25 transition-all hover:-translate-y-0.5 active:translate-y-0">
+          Authentic Navi UPI
+        </button>
+        <button id="demo-clean-fake" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-champagne-500/12 hover:bg-champagne-500/20 text-champagne-700 dark:text-champagne-400 border border-champagne-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
+          Spoof Generator
+        </button>
+        <button id="demo-tampered-phonepe" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-oxblood-600/10 hover:bg-oxblood-600/15 text-oxblood-700 dark:text-[#E06C7C] border border-oxblood-600/25 transition-all hover:-translate-y-0.5 active:translate-y-0">
+          Altered Amount
+        </button>
+      </div>
+    </div>
+
+    <!-- Primary 2-Column Desktop / Stacked Mobile Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- LEFT COLUMN (7 cols): Interactive Verification Workspace -->
+      <div class="lg:col-span-7 space-y-5 animate-reveal animate-delay-2">
+
+        <!-- ========================================================= -->
+        <!-- PANEL 1: RECEIPT SCREENSHOT OCR & FORENSIC ANALYZER       -->
+        <!-- ========================================================= -->
+        <section id="panel-receipt" class="luxury-card bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs overflow-hidden">
+          <div class="px-5 py-4 border-b border-ivory-200 dark:border-[#26231D] flex items-center justify-between gap-2">
+            <div>
+              <h2 class="font-serif text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2 text-[#1A1816] dark:text-[#F5F2EB]">
+                <span class="w-2 h-2 rounded-full bg-champagne-600 dark:bg-champagne-400"></span>
+                Voucher Evidence Ingestion & Forensics
+              </h2>
+              <p class="text-xs text-[#6E675C] dark:text-[#9A9284] mt-0.5">
+                Supports Navi UPI (@naviaxis), GPay, PhonePe, Paytm, CRED, BHIM & Amazon Pay.
+              </p>
+            </div>
+            <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded bg-ivory-100 dark:bg-obsidian-950 text-[#6E675C] dark:text-[#9A9284] border border-ivory-300/80 dark:border-[#26231D]">
+              OCR • ELA • SOBEL
+            </span>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <!-- Upload Error Alert Banner -->
+            <div id="upload-error-banner" class="hidden p-3 rounded-lg bg-oxblood-600/10 border border-oxblood-600/30 text-oxblood-700 dark:text-[#E06C7C] text-xs font-medium flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0 text-oxblood-600 dark:text-[#E06C7C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span id="upload-error-text">Unsupported file format. Please upload an image voucher.</span>
+              </div>
+              <button id="dismiss-upload-error" type="button" class="text-oxblood-600 hover:opacity-75 font-bold">✕</button>
+            </div>
+
+            <!-- Refined Dropzone + Live Camera Trigger -->
+            <div id="drop-zone" class="relative group border border-dashed border-champagne-500/45 hover:border-champagne-600 dark:hover:border-champagne-400 rounded-xl p-6 text-center transition-all duration-300 bg-ivory-100/70 dark:bg-obsidian-950/70 hover:bg-ivory-100 dark:hover:bg-obsidian-950">
+              <div class="mx-auto w-11 h-11 rounded-full bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] text-champagne-600 dark:text-champagne-400 flex items-center justify-center mb-3 shadow-2xs group-hover:scale-110 group-hover:border-champagne-500/60 transition-all duration-300">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              </div>
+              <p class="text-xs sm:text-sm font-medium text-[#2E2A24] dark:text-[#E5DFD3]">
+                Drop payment receipt here, paste via <kbd class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821]">Ctrl+V</kbd> / <kbd class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821]">⌘V</kbd>, or select a source:
+              </p>
+              <div class="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+                <input
+                  id="receiptFileInput"
+                  type="file"
+                  accept="image/*"
+                  aria-label="Upload UPI Payment Receipt Screenshot"
+                  class="block w-full sm:w-auto max-w-xs text-xs text-[#5C564C] dark:text-[#A8A093] file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#1C1A17] dark:file:bg-champagne-500 file:text-[#FDFBF7] dark:file:text-[#14120F] hover:file:opacity-90 file:cursor-pointer cursor-pointer bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] rounded-lg p-1 shadow-2xs"
+                />
+                <button
+                  id="open-camera-btn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-champagne-600 hover:bg-champagne-700 dark:bg-obsidian-850 dark:hover:bg-[#24201A] text-[#FDFBF7] dark:text-champagne-400 border border-champagne-600/40 shadow-2xs transition cursor-pointer"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  <span>Use Camera / Click Photo</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-[#8C8477] mt-3">
+                PNG, JPG, WEBP, HEIC or live optical capture • Processed strictly on-device
+              </p>
+            </div>
+
+            <!-- Live Camera Viewfinder Box -->
+            <div id="camera-workspace" class="hidden rounded-xl overflow-hidden bg-obsidian-950 border border-champagne-500/45 shadow-xl">
+              <div class="px-4 py-2.5 bg-obsidian-900 border-b border-[#26231D] flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 font-semibold text-champagne-400">
+                  <span class="w-2 h-2 rounded-full bg-oxblood-600 animate-pulse"></span>
+                  <span>Optical Camera Viewfinder</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="camera-device-select" aria-label="Select Camera Device" class="hidden max-w-[180px] px-2 py-1 rounded-md bg-obsidian-850 text-[#EFECE4] border border-[#322D25] text-[11px] font-medium outline-none"></select>
+                  <button id="flip-camera-btn" type="button" class="px-2.5 py-1 rounded-md bg-obsidian-850 hover:bg-[#24201A] text-[#EFECE4] font-medium border border-[#322D25] transition cursor-pointer">
+                    Switch Lens
+                  </button>
+                  <button id="close-camera-btn" type="button" class="px-2.5 py-1 rounded-md bg-oxblood-600/20 hover:bg-oxblood-600/30 text-[#E06C7C] font-medium border border-oxblood-600/35 transition cursor-pointer">
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              <div class="relative bg-black flex items-center justify-center min-h-[300px] max-h-[440px] overflow-hidden">
+                <video id="camera-video" autoplay playsinline muted class="w-full max-h-[440px] object-contain"></video>
+                <div class="pointer-events-none absolute inset-6 sm:inset-10 border border-dashed border-champagne-400/80 rounded-xl flex items-end justify-center pb-3">
+                  <span class="px-3 py-1 rounded-md bg-obsidian-950/85 text-champagne-400 text-[11px] font-medium backdrop-blur-sm border border-[#2C2821]">
+                    Center customer's payment screen within frame & capture
+                  </span>
+                </div>
+              </div>
+
+              <div class="p-3 bg-obsidian-900 border-t border-[#26231D] flex items-center justify-center gap-3">
+                <button id="capture-photo-btn" type="button" class="px-5 py-2 rounded-lg text-xs font-semibold bg-champagne-500 hover:bg-champagne-400 text-[#14120F] shadow-sm flex items-center gap-2 transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="9" />
+                    <circle cx="12" cy="12" r="4" fill="currentColor" />
+                  </svg>
+                  <span>Capture Photo & Verify Voucher</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Canvas & Multi-Layer Forensic Preview -->
+            <div id="canvas-workspace" class="hidden space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span id="loaded-file-info" class="font-mono text-[11px] font-medium text-champagne-700 dark:text-champagne-400 truncate max-w-full">
+                  Loaded voucher
+                </span>
+                <div class="inline-flex rounded-lg p-0.5 bg-ivory-100 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#26231D] gap-0.5">
+                  <button type="button" data-layer="original" class="layer-btn px-2.5 py-1 rounded-md text-[11px] font-semibold bg-ivory-50 dark:bg-obsidian-850 text-[#1A1816] dark:text-[#F5F2EB] shadow-2xs">Original</button>
+                  <button type="button" data-layer="ela" class="layer-btn px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#6E675C] dark:text-[#9A9284]">ELA Map</button>
+                  <button type="button" data-layer="sobel" class="layer-btn px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#6E675C] dark:text-[#9A9284]">Sobel Edges</button>
+                  <button type="button" data-layer="luminance" class="layer-btn px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#6E675C] dark:text-[#9A9284]">Luminance</button>
+                </div>
+              </div>
+
+              <div id="canvas-stage" class="relative rounded-xl overflow-hidden bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] flex items-center justify-center min-h-[260px] max-h-[460px] cursor-crosshair">
+                <canvas id="preview-canvas" class="max-h-[460px] w-auto object-contain"></canvas>
+                <canvas id="ela-canvas" class="hidden max-h-[460px] w-auto object-contain"></canvas>
+                <canvas id="sobel-canvas" class="hidden max-h-[460px] w-auto object-contain"></canvas>
+                <canvas id="luminance-canvas" class="hidden max-h-[460px] w-auto object-contain"></canvas>
+                <canvas id="loupe-canvas" width="130" height="130" class="hidden pointer-events-none absolute rounded-full border-2 border-champagne-400 shadow-2xl z-20"></canvas>
+
+                <span id="image-meta-badge" class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-obsidian-900/90 text-[#DFD9CE] font-mono text-[10px] border border-[#322D25]">
+                  —
+                </span>
+
+                <div id="scan-overlay" class="hidden absolute inset-0 bg-obsidian-950/35 pointer-events-none">
+                  <div class="scan-laser absolute left-0 right-0 h-0.5 bg-champagne-400"></div>
+                </div>
+              </div>
+
+              <!-- Pipeline Progress Bar -->
+              <div id="pipeline-box" class="hidden p-3 rounded-lg bg-ivory-100 dark:bg-obsidian-850 border border-ivory-300 dark:border-[#26231D] space-y-1.5 text-xs">
+                <div class="flex items-center justify-between font-medium">
+                  <span id="pipeline-step-label"><span>⏳</span> Examining voucher...</span>
+                  <span id="pipeline-percent" class="font-mono">0%</span>
+                </div>
+                <div class="w-full h-1 rounded-full bg-ivory-300 dark:bg-[#2C2821] overflow-hidden">
+                  <div id="pipeline-bar" class="h-full bg-champagne-600 dark:bg-champagne-400 transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- OCR Extracted & Editable Cross-Check Fields -->
+              <div class="p-4 rounded-xl bg-ivory-100/75 dark:bg-obsidian-950/80 border border-ivory-300/90 dark:border-[#26231D] space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-xs font-semibold text-[#2E2A24] dark:text-[#E5DFD3]">OCR Telemetry & Cross-Check Parameters</span>
+                  <span id="ocr-status-pill" class="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-champagne-500/12 text-champagne-700 dark:text-champagne-400 border border-champagne-500/25">
+                    Ready
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">Detected PSP</label>
+                    <select id="ocr-app" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] font-medium outline-none focus:border-champagne-500">
+                      <option value="Auto">Auto-Detect PSP</option>
+                      <option value="Navi UPI">Navi UPI (@naviaxis)</option>
+                      <option value="GPay">Google Pay (GPay)</option>
+                      <option value="PhonePe">PhonePe</option>
+                      <option value="Paytm">Paytm</option>
+                      <option value="CRED">CRED UPI</option>
+                      <option value="Amazon Pay">Amazon Pay</option>
+                      <option value="BHIM">BHIM UPI</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">12-Digit UTR / Ref ID</label>
+                    <input id="ocr-utr" type="text" maxlength="12" placeholder="Auto-extracted UTR" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] font-mono outline-none focus:border-champagne-500" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">Voucher Amount (₹)</label>
+                    <input id="ocr-amount" type="number" step="0.01" placeholder="e.g. 450.00" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] font-mono outline-none focus:border-champagne-500" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">Expected Payee / VPA</label>
+                    <input id="ocr-expected-payee" type="text" placeholder="Optional: Metro Store" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] outline-none focus:border-champagne-500" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">QR Challenge Token</label>
+                    <input id="ocr-challenge-ref" type="text" placeholder="Optional: SHLD-XXXX" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] font-mono outline-none focus:border-champagne-500" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-[#6E675C] dark:text-[#9A9284] mb-1">Voucher Timestamp</label>
+                    <input id="ocr-timestamp" type="datetime-local" class="w-full px-3 py-2 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] outline-none focus:border-champagne-500" />
+                  </div>
+                </div>
+
+                <details class="text-[11px] text-[#6E675C] dark:text-[#9A9284]">
+                  <summary class="cursor-pointer font-medium hover:text-[#1C1A17] dark:hover:text-[#EFECE4]">Inspect Raw OCR Transcript</summary>
+                  <pre id="ocr-raw-text" class="mt-2 p-2.5 rounded-lg bg-ivory-50 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#26231D] font-mono text-[10px] whitespace-pre-wrap max-h-32 overflow-y-auto">No OCR transcript yet.</pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- PANEL 2: DYNAMIC MERCHANT QR CHALLENGE GENERATOR          -->
+        <!-- ========================================================= -->
+        <section id="panel-qr" class="hidden bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs overflow-hidden">
+          <div class="px-5 py-4 border-b border-ivory-200 dark:border-[#26231D]">
+            <h2 class="font-serif text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2 text-[#1A1816] dark:text-[#F5F2EB]">
+              <span class="w-2 h-2 rounded-full bg-champagne-600 dark:bg-champagne-400"></span>
+              Bespoke Merchant QR Challenge Generator
+            </h2>
+            <p class="text-xs text-[#6E675C] dark:text-[#9A9284] mt-0.5">
+              Embeds a time-bound 3-minute session token (<code class="font-mono text-champagne-700 dark:text-champagne-400">SHLD-XXXX</code>) into the UPI intent URI to block pre-fabricated vouchers.
+            </p>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+            <div class="md:col-span-7 space-y-3.5">
+              <div>
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Merchant UPI ID (VPA)</label>
+                <input id="qr-vpa" type="text" value="merchant.store@okicici" class="w-full px-3 py-2 rounded-lg text-xs font-mono bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Establishment Name</label>
+                  <input id="qr-merchant-name" type="text" value="Metro Retail Store" class="w-full px-3 py-2 rounded-lg text-xs bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Exact Settlement (₹)</label>
+                  <input id="qr-amount" type="number" step="0.01" min="1" value="450.00" class="w-full px-3 py-2 rounded-lg text-xs font-mono bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 pt-1">
+                <button id="generate-qr-btn" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#1C1A17] hover:bg-[#2D2A25] dark:bg-champagne-500 dark:hover:bg-champagne-400 text-[#FDFBF7] dark:text-[#14120F] shadow-2xs transition">
+                  Issue Challenge QR
+                </button>
+                <button id="clear-qr-btn" type="button" class="px-3 py-2 rounded-lg text-xs font-medium bg-ivory-100 hover:bg-ivory-200 dark:bg-obsidian-850 dark:hover:bg-[#24201A] text-[#3B362F] dark:text-[#DFD9CE] border border-ivory-300 dark:border-[#2C2821] transition">
+                  Reset
+                </button>
+              </div>
+
+              <div id="active-challenge-banner" class="p-3 rounded-lg bg-champagne-500/10 border border-champagne-500/25 text-xs space-y-1">
+                <div class="flex items-center justify-between font-semibold text-champagne-700 dark:text-champagne-400">
+                  <span>Active Token: <span id="qr-code-label" class="font-mono">NONE</span></span>
+                  <span id="qr-timer-label" class="font-mono text-[11px] px-2 py-0.5 rounded bg-champagne-500/15">Inactive</span>
+                </div>
+                <p id="qr-uri-preview" class="font-mono text-[10px] text-[#6E675C] dark:text-[#9A9284] break-all">
+                  Issue a Challenge QR prior to customer transfer.
+                </p>
+              </div>
+            </div>
+
+            <!-- Inline Deterministic SVG QR Matrix Display -->
+            <div class="md:col-span-5 flex flex-col items-center justify-center p-4 rounded-xl bg-[#FDFBF7] border border-ivory-300 shadow-2xs text-[#1C1A17]">
+              <div id="qr-svg-container" class="w-40 h-40 flex items-center justify-center"></div>
+              <span id="qr-card-caption" class="mt-2 text-xs font-bold font-mono text-[#1C1A17] tracking-wide">
+                SCAN & SETTLE • ₹450.00
+              </span>
+              <span id="qr-card-sub" class="text-[10px] font-mono text-[#6E675C]">
+                Dynamic UPI Intent URI
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- PANEL 3: DIRECT 12-DIGIT UTR VALIDATOR                    -->
+        <!-- ========================================================= -->
+        <section id="panel-utr" class="hidden bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs overflow-hidden">
+          <div class="px-5 py-4 border-b border-ivory-200 dark:border-[#26231D]">
+            <h2 class="font-serif text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2 text-[#1A1816] dark:text-[#F5F2EB]">
+              <span class="w-2 h-2 rounded-full bg-champagne-600 dark:bg-champagne-400"></span>
+              Direct NPCI 12-Digit UTR & RRN Audit
+            </h2>
+            <p class="text-xs text-[#6E675C] dark:text-[#9A9284] mt-0.5">
+              Validates 12-digit RRN entropy across Navi (@naviaxis), HDFC, SBI, ICICI, YES Bank & Paytm against your Settlement Ledger.
+            </p>
+          </div>
+
+          <form id="utr-form" class="p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Payment Institution / PSP</label>
+                <select id="utr-app" class="w-full px-3 py-2 rounded-lg text-xs bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none">
+                  <option value="Navi UPI">Navi UPI (@naviaxis)</option>
+                  <option value="GPay">Google Pay (GPay)</option>
+                  <option value="PhonePe">PhonePe</option>
+                  <option value="Paytm">Paytm</option>
+                  <option value="CRED">CRED UPI</option>
+                  <option value="Amazon Pay">Amazon Pay UPI</option>
+                  <option value="BHIM">BHIM / Bank UPI</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">12-Digit UTR / UPI Ref No. *</label>
+                <input id="utr-number" type="text" maxlength="12" required placeholder="e.g. 608492718345" class="w-full px-3 py-2 rounded-lg text-xs font-mono tracking-wider bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Settlement Amount (₹ INR) *</label>
+                <input id="utr-amount" type="number" step="0.01" min="1" required placeholder="e.g. 450.00" class="w-full px-3 py-2 rounded-lg text-xs font-mono bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Transfer Date & Time *</label>
+                <input id="utr-timestamp" type="datetime-local" required class="w-full px-3 py-2 rounded-lg text-xs bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-[#3B362F] dark:text-[#DFD9CE] mb-1">Remitter or Merchant UPI ID (VPA)</label>
+                <input id="utr-vpa" type="text" placeholder="e.g. customer@naviaxis" class="w-full px-3 py-2 rounded-lg text-xs font-mono bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none" />
+              </div>
+            </div>
+
+            <div class="pt-1 flex justify-end">
+              <button type="submit" class="w-full sm:w-auto px-5 py-2 rounded-lg text-xs font-semibold bg-[#1C1A17] hover:bg-[#2D2A25] dark:bg-champagne-500 dark:hover:bg-champagne-400 text-[#FDFBF7] dark:text-[#14120F] shadow-2xs transition">
+                Execute UTR Audit
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- AUTHORITATIVE BANK CREDIT LEDGER                          -->
+        <!-- ========================================================= -->
+        <section class="luxury-card bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-ivory-200 dark:border-[#26231D] bg-ivory-100/60 dark:bg-obsidian-950/60 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-serif text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 text-[#1A1816] dark:text-[#F5F2EB]">
+                <span class="w-2 h-2 rounded-full bg-heritage-600 dark:bg-[#58B38B]"></span>
+                Authoritative Bank Settlement Ledger
+              </h3>
+              <p class="text-[11px] text-[#6E675C] dark:text-[#9A9284]">
+                Paste bank credit SMS dispatches or import a statement <code class="font-mono">.csv</code> to confirm 100% clearing.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="load-sample-credits-btn" type="button" class="px-2.5 py-1 rounded-md bg-heritage-600/10 hover:bg-heritage-600/15 text-heritage-700 dark:text-[#63BE96] text-[11px] font-semibold border border-heritage-600/25 transition">
+                + Sample SMS
+              </button>
+              <label for="bankCsvInput" class="px-2.5 py-1 rounded-md bg-ivory-50 dark:bg-obsidian-850 hover:bg-ivory-200/70 dark:hover:bg-[#24201A] text-[#3B362F] dark:text-[#DFD9CE] text-[11px] font-semibold border border-ivory-300 dark:border-[#2C2821] cursor-pointer transition">
+                Import CSV
+                <input id="bankCsvInput" type="file" accept=".csv,text/csv,text/plain" class="hidden" />
+              </label>
+              <button id="clear-ledger-btn" type="button" class="text-[11px] font-medium text-[#8C8477] hover:text-oxblood-600 px-1.5 transition">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <textarea id="bank-sms-input" rows="2" placeholder="Paste bank credit SMS dispatch(es) here, e.g.:&#10;Rs.450.00 credited to A/c XX4821 on 20-11-26 via UPI Ref No 608492718345 - Axis Bank" class="flex-1 px-3 py-2 rounded-lg text-xs font-mono bg-ivory-100/70 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#2C2821] focus:border-champagne-500 outline-none"></textarea>
+              <button id="add-sms-ledger-btn" type="button" class="sm:w-32 px-3.5 py-2 rounded-lg text-xs font-semibold bg-ivory-200/80 hover:bg-ivory-300/70 dark:bg-obsidian-850 dark:hover:bg-[#24201A] text-[#1C1A17] dark:text-[#EFECE4] border border-ivory-300 dark:border-[#2C2821] transition shrink-0">
+                + Record Credit
+              </button>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div id="ledger-pills-container" class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <span class="text-[#8C8477]">0 settled bank credits recorded</span>
+              </div>
+
+              <button id="verify-all-btn" type="button" class="luxury-shimmer w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold bg-[#1C1A17] hover:bg-[#2D2A25] dark:bg-champagne-500 dark:hover:bg-champagne-400 text-[#FDFBF7] dark:text-[#14120F] shadow-2xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-champagne-400 dark:text-[#14120F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+                Execute Forensic Audit
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Audit Log History Card -->
+        <section id="audit-log-section" class="luxury-card bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-2xs overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-ivory-200 dark:border-[#26231D] flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-serif text-base sm:text-lg font-bold tracking-tight text-[#1A1816] dark:text-[#F5F2EB]">Session Clearing Register</h3>
+              <p class="text-[11px] text-[#6E675C] dark:text-[#9A9284]">Tamper-evident audit register with SHA-256 cryptographic digests</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="export-csv-btn" type="button" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-ivory-100 hover:bg-ivory-200 dark:bg-obsidian-850 dark:hover:bg-[#24201A] text-[#3B362F] dark:text-[#DFD9CE] border border-ivory-300 dark:border-[#2C2821] transition">
+                Export CSV
+              </button>
+              <button id="clear-log-btn" type="button" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-[#8C8477] hover:text-oxblood-600 transition">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-56">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-ivory-100/90 dark:bg-obsidian-950 text-[#6E675C] dark:text-[#9A9284] text-[10px] font-mono uppercase tracking-widest border-b border-ivory-200 dark:border-[#26231D]">
+                <tr>
+                  <th class="py-2.5 px-4">Time</th>
+                  <th class="py-2.5 px-4">UTR Ref</th>
+                  <th class="py-2.5 px-4">Amount</th>
+                  <th class="py-2.5 px-4">Ledger</th>
+                  <th class="py-2.5 px-4">Index</th>
+                  <th class="py-2.5 px-4">Determination</th>
+                </tr>
+              </thead>
+              <tbody id="audit-log-body" class="divide-y divide-ivory-200/80 dark:divide-[#26231D]"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN (5 cols): Detailed Forensic Audit Certificate -->
+      <div class="lg:col-span-5 lg:sticky lg:top-22 animate-reveal animate-delay-3">
+        <section id="printable-report" class="luxury-card bg-ivory-50 dark:bg-obsidian-900 rounded-xl border border-ivory-300 dark:border-[#26231D] shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-ivory-200 dark:border-[#26231D] flex items-center justify-between gap-2 bg-ivory-100/70 dark:bg-obsidian-950/70">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-champagne-700 dark:text-champagne-400 block">Cryptographic Audit Dossier</span>
+              <h2 class="font-serif text-lg sm:text-xl font-bold tracking-tight text-[#1A1816] dark:text-[#F5F2EB]">Verification Certificate</h2>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="copy-report-btn" type="button" title="Copy Dossier Summary" class="p-2 rounded-lg bg-ivory-50 dark:bg-obsidian-850 hover:bg-ivory-200/70 dark:hover:bg-[#24201A] border border-ivory-300 dark:border-[#2C2821] text-[#3B362F] dark:text-[#DFD9CE] transition">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+              <button id="print-report-btn" type="button" title="Print Formal Dossier" class="p-2 rounded-lg bg-ivory-50 dark:bg-obsidian-850 hover:bg-ivory-200/70 dark:hover:bg-[#24201A] border border-ivory-300 dark:border-[#2C2821] text-[#3B362F] dark:text-[#DFD9CE] transition">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="report-empty" class="p-9 text-center space-y-3">
+            <div class="mx-auto w-12 h-12 rounded-full bg-ivory-100 dark:bg-obsidian-850 border border-ivory-300 dark:border-[#2C2821] flex items-center justify-center text-champagne-600 dark:text-champagne-400 animate-float">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+              </svg>
+            </div>
+            <h3 class="font-serif text-lg font-semibold text-[#1C1A17] dark:text-[#EFECE4]">Awaiting Voucher Evidence</h3>
+            <p class="text-xs text-[#6E675C] dark:text-[#9A9284] max-w-xs mx-auto leading-relaxed">
+              Present a payment screenshot, capture via optical lens, or select a specimen to issue a 7-pillar forensic certificate.
+            </p>
+          </div>
+
+          <!-- Populated Forensic Result -->
+          <div id="report-content" class="hidden p-5 space-y-4">
+            <!-- Trust Score Radial Gauge & Verdict Banner -->
+            <div class="flex items-center gap-4 p-4 rounded-xl bg-ivory-100/85 dark:bg-obsidian-950 border border-ivory-300 dark:border-[#26231D]">
+              <div class="relative w-18 h-18 shrink-0 flex items-center justify-center">
+                <svg class="w-18 h-18 -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" stroke="currentColor" stroke-width="5.5" fill="transparent" class="text-ivory-300 dark:text-[#26231D]" />
+                  <circle id="score-ring" cx="40" cy="40" r="34" stroke="currentColor" stroke-width="5.5" fill="transparent" stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round" class="text-champagne-600 transition-all duration-700" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="score-value" class="text-base font-bold font-mono">0%</span>
+                  <span class="text-[8px] font-mono uppercase tracking-widest text-[#8C8477]">Index</span>
+                </div>
+              </div>
+
+              <div class="space-y-1.5 min-w-0 flex-1">
+                <div id="verdict-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-champagne-500/15 text-champagne-700 dark:text-champagne-400 border border-champagne-500/30">
+                  AWAITING BANK CREDIT
+                </div>
+                <p id="verdict-summary" class="text-xs text-[#4A443B] dark:text-[#C5BEB2] leading-relaxed">
+                  —
+                </p>
+              </div>
+            </div>
+
+            <!-- Transaction Metadata Snapshot -->
+            <div class="grid grid-cols-2 gap-2.5 text-xs">
+              <div class="p-3 rounded-lg bg-ivory-100/65 dark:bg-obsidian-950/80 border border-ivory-300/90 dark:border-[#26231D]">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-[#8C8477] block">UTR / Ref ID</span>
+                <span id="rep-utr" class="font-mono font-semibold text-[#1A1816] dark:text-[#F5F2EB] mt-0.5 block truncate">—</span>
+              </div>
+              <div class="p-3 rounded-lg bg-ivory-100/65 dark:bg-obsidian-950/80 border border-ivory-300/90 dark:border-[#26231D]">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-[#8C8477] block">Amount & Institution</span>
+                <span id="rep-amount" class="font-mono font-semibold text-[#1A1816] dark:text-[#F5F2EB] mt-0.5 block truncate">—</span>
+              </div>
+            </div>
+
+            <!-- Itemized 7-Pillar Forensic Breakdown -->
+            <div class="space-y-2">
+              <h4 class="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#8C8477]">
+                7-Pillar Forensic Diagnostics
+              </h4>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-ledger" class="w-1.5 h-1.5 rounded-full bg-champagne-500"></span>
+                    I. Bank Credit Ledger Settlement
+                  </span>
+                  <span id="status-ledger" class="font-mono text-[11px] text-champagne-700 dark:text-champagne-400">AWAITING</span>
+                </div>
+                <p id="desc-ledger" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-meta" class="w-1.5 h-1.5 rounded-full bg-heritage-600"></span>
+                    II. Binary EXIF/PNG & DPR Check
+                  </span>
+                  <span id="status-meta" class="font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]">PASS</span>
+                </div>
+                <p id="desc-meta" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-psp" class="w-1.5 h-1.5 rounded-full bg-heritage-600"></span>
+                    III. PSP Footprint, Payee & Spelling
+                  </span>
+                  <span id="status-psp" class="font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]">PASS</span>
+                </div>
+                <p id="desc-psp" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-utr" class="w-1.5 h-1.5 rounded-full bg-heritage-600"></span>
+                    IV. NPCI 12-Digit RRN & OCR Match
+                  </span>
+                  <span id="status-utr" class="font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]">PASS</span>
+                </div>
+                <p id="desc-utr" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-ela" class="w-1.5 h-1.5 rounded-full bg-heritage-600"></span>
+                    V. AI Diffusion & Zone ELA Scan
+                  </span>
+                  <span id="status-ela" class="font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]">PASS</span>
+                </div>
+                <p id="desc-ela" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-time" class="w-1.5 h-1.5 rounded-full bg-heritage-600"></span>
+                    VI. Chronology & Replay Check
+                  </span>
+                  <span id="status-time" class="font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]">PASS</span>
+                </div>
+                <p id="desc-time" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+
+              <div class="pillar-item p-2.5 rounded-lg border border-ivory-300/80 dark:border-[#26231D] bg-ivory-100/40 dark:bg-obsidian-950/50 space-y-1 transition-colors hover:border-champagne-500/40">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="flex items-center gap-2">
+                    <span id="dot-challenge" class="w-1.5 h-1.5 rounded-full bg-champagne-600"></span>
+                    VII. Dynamic QR Challenge Match
+                  </span>
+                  <span id="status-challenge" class="font-mono text-[11px] text-champagne-700 dark:text-champagne-400">OPTIONAL</span>
+                </div>
+                <p id="desc-challenge" class="text-[11px] text-[#6E675C] dark:text-[#9A9284] leading-relaxed">—</p>
+              </div>
+            </div>
+
+            <!-- Tamper-Evident SHA-256 Image Hash Footer -->
+            <div class="p-3 rounded-lg bg-ivory-100 dark:bg-obsidian-950 border border-ivory-300/90 dark:border-[#26231D] text-[11px] text-[#6E675C] dark:text-[#9A9284] space-y-1">
+              <div class="flex items-center justify-between font-mono text-[10px]">
+                <span>SHA-256 EVIDENCE DIGEST</span>
+                <span id="rep-scanned-at">—</span>
+              </div>
+              <code id="rep-hash" class="block font-mono text-[10px] text-[#2E2A24] dark:text-[#DFD9CE] break-all">
+                NO-IMAGE-HASH
+              </code>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Reserve Bank of India (RBI) Directed Banking Security Guideline Footer -->
+  <footer class="mt-auto border-t border-ivory-300 dark:border-[#26231D] bg-ivory-50/90 dark:bg-obsidian-950/95 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-7 flex flex-col items-center text-center space-y-4">
+      <!-- Reserve Bank of India Horizontal Logo Lockup -->
+      <div class="flex flex-col items-center gap-2.5">
+        <div class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-[#FFFFFF] border border-ivory-300 dark:border-champagne-600/40 shadow-2xs">
+          <svg class="w-full max-w-[360px] sm:max-w-[440px] h-auto" viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reserve Bank of India">
+            <defs>
+              <!-- Outer Metallic Gold Ring Gradient -->
+              <radialGradient id="rbiOuterGold" cx="44%" cy="40%" r="58%">
+                <stop offset="0%" stop-color="#FFF0C2" />
+                <stop offset="42%" stop-color="#E4BC68" />
+                <stop offset="80%" stop-color="#C49740" />
+                <stop offset="100%" stop-color="#9A6F22" />
+              </radialGradient>
+              <!-- Inner Emblem Warm Cream-Gold Radial Gradient -->
+              <radialGradient id="rbiInnerCream" cx="50%" cy="44%" r="56%">
+                <stop offset="0%" stop-color="#FFFFFA" />
+                <stop offset="52%" stop-color="#F8E7B9" />
+                <stop offset="100%" stop-color="#E2BC6D" />
+              </radialGradient>
+              <!-- Circular Text Arcs -->
+              <path id="rbiTopTextArc" d="M 31,87 A 56,56 0 1,1 143,87" />
+              <path id="rbiBottomTextArc" d="M 26,89 A 61,61 0 0,0 148,89" />
+            </defs>
+
+            <!-- LEFT CIRCULAR SEAL -->
+            <g>
+              <circle cx="87" cy="87" r="76.5" fill="url(#rbiOuterGold)" stroke="#111111" stroke-width="2.5" />
+              <circle cx="87" cy="87" r="73" fill="none" stroke="#111111" stroke-width="0.95" />
+              <circle cx="87" cy="87" r="46.5" fill="url(#rbiInnerCream)" stroke="#111111" stroke-width="1.85" />
+              <circle cx="87" cy="87" r="44.4" fill="none" stroke="#111111" stroke-width="0.65" />
+
+              <!-- Ring Dividers -->
+              <circle cx="26.5" cy="87" r="2.2" fill="#111111" />
+              <circle cx="147.5" cy="87" r="2.2" fill="#111111" />
+
+              <!-- Curved Devanagari & English Ring Legends -->
+              <text fill="#111111" font-size="13.5" font-weight="700" font-family="'Noto Sans Devanagari', 'Kohinoor Devanagari', sans-serif" letter-spacing="0.35">
+                <textPath href="#rbiTopTextArc" startOffset="50%" text-anchor="middle">भारतीय रिज़र्व बैंक</textPath>
+              </text>
+              <text fill="#111111" font-size="11.4" font-weight="700" font-family="Georgia, 'Times New Roman', serif" letter-spacing="1.08">
+                <textPath href="#rbiBottomTextArc" startOffset="50%" text-anchor="middle">RESERVE BANK OF INDIA</textPath>
+              </text>
+
+              <!-- Palm Tree -->
+              <g stroke="#111111" fill="none" stroke-linecap="round">
+                <path d="M 93.5,108.5 C 92,93 92.5,76 94,58" stroke-width="2.8" />
+                <path d="M 92,97 L 95,96 M 92,90 L 95,89 M 92.2,83 L 95.2,82 M 92.5,76 L 95.5,75 M 92.8,69 L 95.7,68" stroke-width="1.1" />
+                <path d="M 94,58 C 82.5,51 71.5,54 65.5,61" stroke-width="1.8" />
+                <path d="M 94,58 C 105.5,51 116.5,54 122.5,61" stroke-width="1.8" />
+                <path d="M 94,57 C 81.5,46 69.5,46 62.5,51" stroke-width="1.7" />
+                <path d="M 94,57 C 106.5,46 118.5,46 125.5,51" stroke-width="1.7" />
+                <path d="M 94,56 C 85.5,43 76.5,41 69.5,44" stroke-width="1.6" />
+                <path d="M 94,56 C 102.5,43 111.5,41 118.5,44" stroke-width="1.6" />
+                <path d="M 94,55 C 90.5,43 86.5,40 82.5,41" stroke-width="1.4" />
+                <path d="M 94,55 C 97.5,43 101.5,40 105.5,41" stroke-width="1.4" />
+                <path d="M 73.5,55 L 70.5,60 M 79.5,53 L 76.5,58 M 85.5,53 L 83.5,57 M 114.5,55 L 117.5,60 M 108.5,53 L 111.5,58 M 102.5,53 L 104.5,57 M 72.5,48 L 68.5,53 M 78.5,47 L 75.5,51 M 115.5,48 L 119.5,53 M 109.5,47 L 112.5,51" stroke-width="1" />
+              </g>
+
+              <!-- Royal Bengal Tiger -->
+              <g>
+                <path d="M 62,88 C 59,88 57,90.5 58.5,93 C 59.5,94.5 63.5,94.5 66,93.5 L 67,108.5 L 71.5,108.5 L 71.5,98.5 L 76.5,108.5 L 81,108.5 L 79.5,97.5 L 93.5,97.5 L 95,108.5 L 99.5,108.5 L 99.5,98.5 L 104.5,108.5 L 109,108.5 L 106,93 C 109.5,90 113.5,84 117,80.5 C 118.5,79 116.5,77.5 115,79 C 111,83 108,87.5 104.5,89.5 C 96,86.5 79,86.5 69,89 C 67,87.8 64.5,87.8 62,88 Z" fill="#F7E4B2" stroke="#111111" stroke-width="1.5" stroke-linejoin="round" />
+                <path d="M 73,88.5 L 73.5,94 M 78,88 L 78.5,95 M 83,88 L 83.5,94.5 M 88,88 L 88.5,95 M 93,88.2 L 93.5,94.5 M 98,88.8 L 98.5,94.5 M 102.5,89.5 L 102.5,94.5 M 62,90.5 L 63.5,90.5" stroke="#111111" stroke-width="1.25" stroke-linecap="round" />
+                <rect x="53" y="108.8" width="68" height="2.2" rx="1" fill="#111111" />
+              </g>
+            </g>
+
+            <!-- RIGHT HORIZONTAL BILINGUAL WORDMARK -->
+            <g transform="translate(192, 0)">
+              <text x="0" y="84" fill="#111111" font-size="47" font-weight="800" font-family="'Noto Sans Devanagari', 'Kohinoor Devanagari', sans-serif" letter-spacing="-0.5">
+                भारतीय रिज़र्व बैंक
+              </text>
+              <line x1="2" y1="101" x2="386" y2="101" stroke="#111111" stroke-width="2" />
+              <text x="2" y="129" fill="#111111" font-size="25.8" font-weight="700" font-family="Georgia, 'Times New Roman', serif" letter-spacing="1.45">
+                RESERVE BANK OF INDIA
+              </text>
+              <line x1="2" y1="140" x2="386" y2="140" stroke="#111111" stroke-width="2" />
+            </g>
+          </svg>
+        </div>
+
+        <span class="block text-[10px] font-mono font-semibold uppercase tracking-[0.2em] text-champagne-700 dark:text-champagne-400 pt-0.5">
+          Safe Digital Banking & UPI Settlement Guideline
+        </span>
+      </div>
+
+      <!-- Advisory Guidance -->
+      <p class="text-xs text-[#5C564C] dark:text-[#A8A093] leading-relaxed max-w-2xl">
+        As directed under <strong class="font-semibold text-[#1C1A17] dark:text-[#EFECE4]">Reserve Bank of India (RBI)</strong> digital payment safety guidelines: merchants and beneficiaries must confirm actual fund credit directly in their <strong class="font-semibold text-[#1C1A17] dark:text-[#EFECE4]">official Bank Statement, Bank SMS Alert, or UPI Merchant App</strong> before releasing goods or services. Never share your UPI PIN, OTP, or remote screen access with any caller, and never scan a QR code or approve a collect request to receive funds.
+      </p>
+
+      <!-- Helpline & Governance Badges -->
+      <div class="flex flex-wrap items-center justify-center gap-2 pt-0.5 text-[11px] font-mono">
+        <span class="px-2.5 py-1 rounded-md bg-ivory-100 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] text-[#3B362F] dark:text-[#DFD9CE]">
+          RBI Ombudsman: <strong class="text-champagne-700 dark:text-champagne-400">cms.rbi.org.in</strong>
+        </span>
+        <span class="px-2.5 py-1 rounded-md bg-ivory-100 dark:bg-obsidian-900 border border-ivory-300 dark:border-[#2C2821] text-[#3B362F] dark:text-[#DFD9CE]">
+          National Cyber Fraud Helpline: <strong class="text-oxblood-700 dark:text-[#E06C7C]">1930</strong> • <strong class="text-champagne-700 dark:text-champagne-400">cybercrime.gov.in</strong>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Hidden Offscreen Canvas for Synthetic Demo Receipt Generation -->
+  <canvas id="generator-canvas" width="540" height="1080" class="hidden"></canvas>
+
+  <script>
+    /**
+     * UPI Shield v5.0 — 7-Point Forensic UPI Fraud & Receipt Verifier
+     * Inspects raw file bytes (EXIF/PNG chunks), mobile DPR screen resolution,
+     * PSP-specific dual-ID vocabulary (Navi UPI, GPay, PhonePe, Paytm),
+     * zone-targeted ELA/halo pixel discrepancies, and timestamp chronology.
+     */
+    (function () {
+      'use strict';
+
+      const state = {
+        activeMode: 'receipt',
+        soundEnabled: true,
+        currentImageLoaded: false,
+        currentSha256: 'DIRECT-UTR-MODE',
+        isCameraCapture: false,
+        cameraStream: null,
+        cameraFacingMode: 'environment',
+        binaryMetaAudit: null,
+        imageStats: null,
+        ocrDetectedData: null,
+        settledCredits: [],
+        activeChallenge: null,
+        challengeTimerId: null,
+        auditLogs: []
+      };
+
+      const els = {
+        themeToggle: document.getElementById('theme-toggle'),
+        kioskToggleBtn: document.getElementById('kiosk-toggle-btn'),
+        exitKioskBtn: document.getElementById('exit-kiosk-btn'),
+        kioskBanner: document.getElementById('kiosk-banner'),
+        soundToggleBtn: document.getElementById('sound-toggle-btn'),
+        iconSoundOn: document.getElementById('icon-sound-on'),
+        iconSoundOff: document.getElementById('icon-sound-off'),
+
+        tabReceipt: document.getElementById('tab-receipt'),
+        tabQr: document.getElementById('tab-qr'),
+        tabUtr: document.getElementById('tab-utr'),
+        panelReceipt: document.getElementById('panel-receipt'),
+        panelQr: document.getElementById('panel-qr'),
+        panelUtr: document.getElementById('panel-utr'),
+
+        // 3 Demo Scenarios
+        demoNaviUpi: document.getElementById('demo-navi-upi'),
+        demoCleanFake: document.getElementById('demo-clean-fake'),
+        demoTamperedPhonepe: document.getElementById('demo-tampered-phonepe'),
+
+        // Mode A: Receipt Scanner
+        globalDropOverlay: document.getElementById('global-drop-overlay'),
+        uploadErrorBanner: document.getElementById('upload-error-banner'),
+        uploadErrorText: document.getElementById('upload-error-text'),
+        dismissUploadError: document.getElementById('dismiss-upload-error'),
+        loadedFileInfo: document.getElementById('loaded-file-info'),
+        dropZone: document.getElementById('drop-zone'),
+        fileInput: document.getElementById('receiptFileInput'),
+        openCameraBtn: document.getElementById('open-camera-btn'),
+        cameraWorkspace: document.getElementById('camera-workspace'),
+        cameraVideo: document.getElementById('camera-video'),
+        cameraDeviceSelect: document.getElementById('camera-device-select'),
+        flipCameraBtn: document.getElementById('flip-camera-btn'),
+        closeCameraBtn: document.getElementById('close-camera-btn'),
+        capturePhotoBtn: document.getElementById('capture-photo-btn'),
+        canvasWorkspace: document.getElementById('canvas-workspace'),
+        canvasStage: document.getElementById('canvas-stage'),
+        previewCanvas: document.getElementById('preview-canvas'),
+        elaCanvas: document.getElementById('ela-canvas'),
+        sobelCanvas: document.getElementById('sobel-canvas'),
+        luminanceCanvas: document.getElementById('luminance-canvas'),
+        loupeCanvas: document.getElementById('loupe-canvas'),
+        layerBtns: document.querySelectorAll('.layer-btn'),
+        imageMetaBadge: document.getElementById('image-meta-badge'),
+        scanOverlay: document.getElementById('scan-overlay'),
+        pipelineBox: document.getElementById('pipeline-box'),
+        pipelineStepLabel: document.getElementById('pipeline-step-label'),
+        pipelinePercent: document.getElementById('pipeline-percent'),
+        pipelineBar: document.getElementById('pipeline-bar'),
+        ocrStatusPill: document.getElementById('ocr-status-pill'),
+        ocrApp: document.getElementById('ocr-app'),
+        ocrUtr: document.getElementById('ocr-utr'),
+        ocrAmount: document.getElementById('ocr-amount'),
+        ocrExpectedPayee: document.getElementById('ocr-expected-payee'),
+        ocrChallengeRef: document.getElementById('ocr-challenge-ref'),
+        ocrTimestamp: document.getElementById('ocr-timestamp'),
+        ocrRawText: document.getElementById('ocr-raw-text'),
+
+        // Mode B: Dynamic QR Challenge
+        qrVpa: document.getElementById('qr-vpa'),
+        qrMerchantName: document.getElementById('qr-merchant-name'),
+        qrAmount: document.getElementById('qr-amount'),
+        generateQrBtn: document.getElementById('generate-qr-btn'),
+        clearQrBtn: document.getElementById('clear-qr-btn'),
+        qrCodeLabel: document.getElementById('qr-code-label'),
+        qrTimerLabel: document.getElementById('qr-timer-label'),
+        qrUriPreview: document.getElementById('qr-uri-preview'),
+        qrSvgContainer: document.getElementById('qr-svg-container'),
+        qrCardCaption: document.getElementById('qr-card-caption'),
+        qrCardSub: document.getElementById('qr-card-sub'),
+
+        // Mode C: Direct UTR
+        utrForm: document.getElementById('utr-form'),
+        utrApp: document.getElementById('utr-app'),
+        utrNumber: document.getElementById('utr-number'),
+        utrAmount: document.getElementById('utr-amount'),
+        utrTimestamp: document.getElementById('utr-timestamp'),
+        utrVpa: document.getElementById('utr-vpa'),
+
+        // Live Bank Credit Ledger
+        loadSampleCreditsBtn: document.getElementById('load-sample-credits-btn'),
+        bankCsvInput: document.getElementById('bankCsvInput'),
+        clearLedgerBtn: document.getElementById('clear-ledger-btn'),
+        bankSmsInput: document.getElementById('bank-sms-input'),
+        addSmsLedgerBtn: document.getElementById('add-sms-ledger-btn'),
+        ledgerPillsContainer: document.getElementById('ledger-pills-container'),
+        verifyAllBtn: document.getElementById('verify-all-btn'),
+
+        // Report
+        reportEmpty: document.getElementById('report-empty'),
+        reportContent: document.getElementById('report-content'),
+        scoreRing: document.getElementById('score-ring'),
+        scoreValue: document.getElementById('score-value'),
+        verdictBadge: document.getElementById('verdict-badge'),
+        verdictSummary: document.getElementById('verdict-summary'),
+        repUtr: document.getElementById('rep-utr'),
+        repAmount: document.getElementById('rep-amount'),
+
+        dotLedger: document.getElementById('dot-ledger'),
+        statusLedger: document.getElementById('status-ledger'),
+        descLedger: document.getElementById('desc-ledger'),
+
+        dotMeta: document.getElementById('dot-meta'),
+        statusMeta: document.getElementById('status-meta'),
+        descMeta: document.getElementById('desc-meta'),
+
+        dotPsp: document.getElementById('dot-psp'),
+        statusPsp: document.getElementById('status-psp'),
+        descPsp: document.getElementById('desc-psp'),
+
+        dotUtr: document.getElementById('dot-utr'),
+        statusUtr: document.getElementById('status-utr'),
+        descUtr: document.getElementById('desc-utr'),
+
+        dotEla: document.getElementById('dot-ela'),
+        statusEla: document.getElementById('status-ela'),
+        descEla: document.getElementById('desc-ela'),
+
+        dotTime: document.getElementById('dot-time'),
+        statusTime: document.getElementById('status-time'),
+        descTime: document.getElementById('desc-time'),
+
+        dotChallenge: document.getElementById('dot-challenge'),
+        statusChallenge: document.getElementById('status-challenge'),
+        descChallenge: document.getElementById('desc-challenge'),
+
+        repHash: document.getElementById('rep-hash'),
+        repScannedAt: document.getElementById('rep-scanned-at'),
+        copyReportBtn: document.getElementById('copy-report-btn'),
+        printReportBtn: document.getElementById('print-report-btn'),
+
+        // Audit Log
+        auditLogBody: document.getElementById('audit-log-body'),
+        exportCsvBtn: document.getElementById('export-csv-btn'),
+        clearLogBtn: document.getElementById('clear-log-btn'),
+
+        generatorCanvas: document.getElementById('generator-canvas'),
+        toastContainer: document.getElementById('toast-container')
+      };
+
+      // Web Audio API Chime / Alert Synthesizer
+      function playAuditTone(type) {
+        if (!state.soundEnabled) return;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const ctx = new AudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          if (type === 'verified') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.36);
+          } else if (type === 'danger') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, ctx.currentTime);
+            osc.frequency.setValueAtTime(165, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.14, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.43);
+          } else {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.23);
+          }
+        } catch (e) {}
+      }
+
+      // Non-blocking Toast Banner
+      function showToast(message, type = 'info') {
+        const colors = {
+          info: 'bg-[#1C1A17] text-[#F5F2EB] border-champagne-600/40 dark:bg-obsidian-850',
+          success: 'bg-[#163D2C] text-[#E6F4ED] border-[#2E7D5B]',
+          warning: 'bg-[#3D2E16] text-[#FBF3E4] border-champagne-500',
+          danger: 'bg-[#4A161E] text-[#FDECEF] border-[#A83244]'
+        };
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs font-semibold flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+        toast.textContent = message;
+        els.toastContainer.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+
+      function getCurrentLocalDateTime() {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        return new Date(now - offset).toISOString().slice(0, 16);
+      }
+
+      async function computeSha256Hex(arrayBuffer) {
+        try {
+          const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        } catch (e) {
+          return 'SHA256-UNAVAILABLE';
+        }
+      }
+
+      els.ocrTimestamp.value = getCurrentLocalDateTime();
+      els.utrTimestamp.value = getCurrentLocalDateTime();
+
+      // Theme, Kiosk & Sound Controls
+      els.themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
+      els.kioskToggleBtn.addEventListener('click', () => {
+        document.body.classList.add('kiosk-active');
+        els.kioskBanner.classList.remove('hidden');
+        showToast('Entered Merchant Counter Kiosk Mode', 'info');
+      });
+      els.exitKioskBtn.addEventListener('click', () => {
+        document.body.classList.remove('kiosk-active');
+        els.kioskBanner.classList.add('hidden');
+      });
+      els.soundToggleBtn.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        els.iconSoundOn.classList.toggle('hidden', !state.soundEnabled);
+        els.iconSoundOff.classList.toggle('hidden', state.soundEnabled);
+        showToast(state.soundEnabled ? 'Audio chimes enabled' : 'Audio chimes muted', 'info');
+      });
+
+      // Mode Switching (Receipt / Dynamic QR / Direct UTR)
+      function switchMode(mode) {
+        state.activeMode = mode;
+        const activeClasses = ['bg-ivory-50', 'dark:bg-obsidian-850', 'text-champagne-700', 'dark:text-champagne-400', 'shadow-2xs', 'border', 'border-ivory-300/70', 'dark:border-[#322D25]'];
+        const inactiveClasses = ['text-[#6E675C]', 'dark:text-[#9A9284]', 'hover:text-[#1C1A17]', 'dark:hover:text-[#EFECE4]'];
+
+        const tabs = { receipt: els.tabReceipt, qr: els.tabQr, utr: els.tabUtr };
+        const panels = { receipt: els.panelReceipt, qr: els.panelQr, utr: els.panelUtr };
+
+        Object.keys(tabs).forEach(key => {
+          const isMatch = key === mode;
+          panels[key].classList.toggle('hidden', !isMatch);
+          if (isMatch) {
+            tabs[key].classList.add(...activeClasses);
+            tabs[key].classList.remove(...inactiveClasses);
+          } else {
+            tabs[key].classList.remove(...activeClasses);
+            tabs[key].classList.add(...inactiveClasses);
+          }
+        });
+      }
+
+      els.tabReceipt.addEventListener('click', () => switchMode('receipt'));
+      els.tabQr.addEventListener('click', () => switchMode('qr'));
+      els.tabUtr.addEventListener('click', () => switchMode('utr'));
+
+      // =========================================================================
+      // UPLOAD HELPERS, DRAG-AND-DROP, CLIPBOARD PASTE & IMAGE DECODER
+      // =========================================================================
+      function showUploadError(msg) {
+        els.uploadErrorText.textContent = msg;
+        els.uploadErrorBanner.classList.remove('hidden');
+        showToast(msg, 'danger');
+      }
+
+      function hideUploadError() {
+        els.uploadErrorBanner.classList.add('hidden');
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.min(2, Math.floor(Math.log(bytes) / Math.log(1024)));
+        return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${sizes[i]}`;
+      }
+
+      function decodeImageFile(file) {
+        return new Promise((resolve, reject) => {
+          const objectUrl = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(img);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const fallbackImg = new Image();
+              fallbackImg.onload = () => resolve(fallbackImg);
+              fallbackImg.onerror = () => reject(new Error('Image format could not be decoded by browser. Try PNG or JPG.'));
+              fallbackImg.src = ev.target.result;
+            };
+            reader.onerror = () => reject(new Error('Failed to read uploaded file.'));
+            reader.readAsDataURL(file);
+          };
+          img.src = objectUrl;
+        });
+      }
+
+      els.dismissUploadError.addEventListener('click', hideUploadError);
+
+      els.fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          stopCameraStream();
+          handleUploadedFile(e.target.files[0], { isCameraCapture: false });
+          e.target.value = '';
+        }
+      });
+
+      // =========================================================================
+      // LIVE CAMERA CAPTURE (DEDICATED WEBRTC GETUSERMEDIA — NEVER OPENS FILE PICKER)
+      // =========================================================================
+      function stopCameraStream() {
+        if (state.cameraStream) {
+          state.cameraStream.getTracks().forEach((track) => track.stop());
+          state.cameraStream = null;
+        }
+        if (els.cameraVideo) {
+          els.cameraVideo.srcObject = null;
+        }
+        if (els.cameraWorkspace) {
+          els.cameraWorkspace.classList.add('hidden');
+        }
+      }
+
+      async function populateCameraDeviceList(activeDeviceId = '') {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+          if (videoInputs.length > 1) {
+            els.cameraDeviceSelect.innerHTML = videoInputs
+              .map((d, idx) => `<option value="${d.deviceId}" ${d.deviceId === activeDeviceId ? 'selected' : ''}>${d.label || `Camera ${idx + 1}`}</option>`)
+              .join('');
+            els.cameraDeviceSelect.classList.remove('hidden');
+          } else {
+            els.cameraDeviceSelect.classList.add('hidden');
+          }
+        } catch (e) {}
+      }
+
+      async function startCameraStream(facingMode = 'environment', specificDeviceId = '') {
+        hideUploadError();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showUploadError('Live camera API is not supported in this browser/sandbox. Please allow camera permissions or upload a screenshot.');
+          return;
+        }
+        stopCameraStream();
+        try {
+          let stream;
+          const videoConstraints = specificDeviceId
+            ? { deviceId: { exact: specificDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+            : { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } };
+
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+          } catch (fallbackErr) {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          }
+          state.cameraStream = stream;
+          state.cameraFacingMode = facingMode;
+          els.cameraVideo.srcObject = stream;
+          els.cameraWorkspace.classList.remove('hidden');
+          els.cameraWorkspace.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          await els.cameraVideo.play();
+
+          const activeTrack = stream.getVideoTracks()[0];
+          const currentId = activeTrack && activeTrack.getSettings ? activeTrack.getSettings().deviceId : '';
+          await populateCameraDeviceList(currentId);
+          showToast('Live camera ready — align receipt and click Capture Photo', 'info');
+        } catch (err) {
+          showUploadError('Camera access was blocked or no webcam/camera was detected. Grant camera permission in your browser bar and click Use Camera again.');
+        }
+      }
+
+      els.openCameraBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startCameraStream(state.cameraFacingMode);
+      });
+      els.cameraDeviceSelect.addEventListener('change', (e) => {
+        if (e.target.value) startCameraStream(state.cameraFacingMode, e.target.value);
+      });
+      els.flipCameraBtn.addEventListener('click', () => {
+        const nextMode = state.cameraFacingMode === 'environment' ? 'user' : 'environment';
+        startCameraStream(nextMode);
+      });
+      els.closeCameraBtn.addEventListener('click', () => {
+        stopCameraStream();
+        showToast('Camera closed', 'info');
+      });
+
+      els.capturePhotoBtn.addEventListener('click', () => {
+        const video = els.cameraVideo;
+        if (!video || !video.videoWidth || !video.videoHeight) {
+          showUploadError('Camera feed is still initializing. Wait a moment and try again.');
+          return;
+        }
+        const snapCanvas = document.createElement('canvas');
+        snapCanvas.width = video.videoWidth;
+        snapCanvas.height = video.videoHeight;
+        const sCtx = snapCanvas.getContext('2d');
+        sCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+
+        snapCanvas.toBlob(async (blob) => {
+          if (!blob) {
+            showUploadError('Failed to capture camera snapshot.');
+            return;
+          }
+          stopCameraStream();
+          const capturedFile = new File([blob], `camera_receipt_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          await handleUploadedFile(capturedFile, { isCameraCapture: true });
+          showToast('Receipt photo captured — running OCR & Zero-Trust audit...', 'success');
+        }, 'image/jpeg', 0.94);
+      });
+
+      let dragDepth = 0;
+      window.addEventListener('dragenter', (e) => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+          e.preventDefault();
+          dragDepth++;
+          els.globalDropOverlay.classList.remove('hidden');
+        }
+      });
+
+      window.addEventListener('dragover', (e) => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+          e.preventDefault();
+        }
+      });
+
+      window.addEventListener('dragleave', () => {
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) {
+          els.globalDropOverlay.classList.add('hidden');
+        }
+      });
+
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDepth = 0;
+        els.globalDropOverlay.classList.add('hidden');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          switchMode('receipt');
+          handleUploadedFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      window.addEventListener('paste', (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.startsWith('image/')) {
+            const blob = items[i].getAsFile();
+            if (blob) {
+              switchMode('receipt');
+              handleUploadedFile(new File([blob], `clipboard_receipt_${Date.now()}.png`, { type: blob.type || 'image/png' }));
+              showToast('Pasted receipt image from clipboard', 'info');
+              break;
+            }
+          }
+        }
+      });
+
+      // =========================================================================
+      // FORENSIC LAYER SWITCHER & 3x SUB-PIXEL MAGNIFIER LOUPE
+      // =========================================================================
+      function setActiveLayer(layerName) {
+        const map = {
+          original: els.previewCanvas,
+          ela: els.elaCanvas,
+          sobel: els.sobelCanvas,
+          luminance: els.luminanceCanvas
+        };
+        Object.keys(map).forEach((key) => {
+          map[key].classList.toggle('hidden', key !== layerName);
+        });
+        els.layerBtns.forEach((btn) => {
+          const active = btn.dataset.layer === layerName;
+          btn.classList.toggle('bg-ivory-50', active);
+          btn.classList.toggle('dark:bg-obsidian-850', active);
+          btn.classList.toggle('text-[#1A1816]', active);
+          btn.classList.toggle('dark:text-[#F5F2EB]', active);
+          btn.classList.toggle('shadow-2xs', active);
+          btn.classList.toggle('text-[#6E675C]', !active);
+          btn.classList.toggle('dark:text-[#9A9284]', !active);
+        });
+      }
+
+      els.layerBtns.forEach((btn) => {
+        btn.addEventListener('click', () => setActiveLayer(btn.dataset.layer));
+      });
+
+      function updateLoupe(clientX, clientY) {
+        if (!state.currentImageLoaded) return;
+        const activeCanvas = [els.previewCanvas, els.elaCanvas, els.sobelCanvas, els.luminanceCanvas].find(
+          (c) => !c.classList.contains('hidden')
+        );
+        if (!activeCanvas) return;
+
+        const rect = activeCanvas.getBoundingClientRect();
+        const stageRect = els.canvasStage.getBoundingClientRect();
+        if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+          els.loupeCanvas.classList.add('hidden');
+          return;
+        }
+
+        const scaleX = activeCanvas.width / rect.width;
+        const scaleY = activeCanvas.height / rect.height;
+        const srcX = (clientX - rect.left) * scaleX;
+        const srcY = (clientY - rect.top) * scaleY;
+
+        const loupe = els.loupeCanvas;
+        const lCtx = loupe.getContext('2d');
+        const zoom = 3;
+        const sampleSize = loupe.width / zoom;
+
+        loupe.classList.remove('hidden');
+        loupe.style.left = `${Math.max(8, Math.min(stageRect.width - 136, clientX - stageRect.left - 65))}px`;
+        loupe.style.top = `${Math.max(8, Math.min(stageRect.height - 136, clientY - stageRect.top - 65))}px`;
+
+        lCtx.clearRect(0, 0, loupe.width, loupe.height);
+        lCtx.imageSmoothingEnabled = false;
+        lCtx.drawImage(
+          activeCanvas,
+          srcX - sampleSize / 2,
+          srcY - sampleSize / 2,
+          sampleSize,
+          sampleSize,
+          0,
+          0,
+          loupe.width,
+          loupe.height
+        );
+
+        lCtx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
+        lCtx.lineWidth = 1;
+        lCtx.beginPath();
+        lCtx.moveTo(loupe.width / 2, 0);
+        lCtx.lineTo(loupe.width / 2, loupe.height);
+        lCtx.moveTo(0, loupe.height / 2);
+        lCtx.lineTo(loupe.width, loupe.height / 2);
+        lCtx.stroke();
+      }
+
+      els.canvasStage.addEventListener('mousemove', (e) => updateLoupe(e.clientX, e.clientY));
+      els.canvasStage.addEventListener('mouseleave', () => els.loupeCanvas.classList.add('hidden'));
+      els.canvasStage.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) updateLoupe(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      els.canvasStage.addEventListener('touchend', () => els.loupeCanvas.classList.add('hidden'));
+
+      // =========================================================================
+      // DYNAMIC MERCHANT QR CHALLENGE GENERATOR
+      // =========================================================================
+      function renderDeterministicQrSvg(payload) {
+        const size = 25;
+        let hash = 2166136261;
+        for (let i = 0; i < payload.length; i++) {
+          hash ^= payload.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        const isFinder = (r, c) =>
+          (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
+
+        let rects = '';
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            let dark = false;
+            if (isFinder(r, c)) {
+              const lr = r < 7 ? r : r - (size - 7);
+              const lc = c < 7 ? c : c - (size - 7);
+              dark = lr === 0 || lr === 6 || lc === 0 || lc === 6 || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+            } else {
+              const seed = (hash ^ (r * 73856093) ^ (c * 19349663) ^ payload.charCodeAt((r + c) % payload.length)) >>> 0;
+              dark = (seed % 11) < 5;
+            }
+            if (dark) {
+              rects += `<rect x="${c * 8 + 10}" y="${r * 8 + 10}" width="8" height="8" fill="#0f172a"/>`;
+            }
+          }
+        }
+        return `<svg viewBox="0 0 220 220" class="w-full h-full"><rect width="220" height="220" rx="12" fill="#ffffff"/>${rects}</svg>`;
+      }
+
+      function generateMerchantChallengeQr() {
+        const vpa = els.qrVpa.value.trim() || 'merchant.store@okicici';
+        const name = els.qrMerchantName.value.trim() || 'Merchant';
+        const amt = Math.max(1, parseFloat(els.qrAmount.value) || 450);
+        const code = `SHLD-${Math.floor(1000 + Math.random() * 9000)}`;
+        const uri = `upi://pay?pa=${encodeURIComponent(vpa)}&pn=${encodeURIComponent(name)}&am=${amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent(code)}`;
+
+        state.activeChallenge = {
+          code,
+          amount: amt,
+          vpa,
+          uri,
+          expiresAt: Date.now() + 180000
+        };
+
+        els.qrCodeLabel.textContent = code;
+        els.qrUriPreview.textContent = uri;
+        els.qrSvgContainer.innerHTML = renderDeterministicQrSvg(uri);
+        els.qrCardCaption.textContent = `${code} • ₹${amt.toFixed(2)}`;
+        els.qrCardSub.textContent = `Valid 3 mins • ${vpa}`;
+
+        if (state.challengeTimerId) clearInterval(state.challengeTimerId);
+        const updateTimer = () => {
+          if (!state.activeChallenge) return;
+          const rem = Math.max(0, Math.floor((state.activeChallenge.expiresAt - Date.now()) / 1000));
+          const mins = String(Math.floor(rem / 60)).padStart(2, '0');
+          const secs = String(rem % 60).padStart(2, '0');
+          els.qrTimerLabel.textContent = rem > 0 ? `${mins}:${secs} left` : 'Expired';
+        };
+        updateTimer();
+        state.challengeTimerId = setInterval(updateTimer, 1000);
+        showToast(`Generated Merchant QR Challenge ${code} (₹${amt.toFixed(2)})`, 'info');
+      }
+
+      els.generateQrBtn.addEventListener('click', generateMerchantChallengeQr);
+      els.clearQrBtn.addEventListener('click', () => {
+        state.activeChallenge = null;
+        if (state.challengeTimerId) clearInterval(state.challengeTimerId);
+        els.qrCodeLabel.textContent = 'NONE';
+        els.qrTimerLabel.textContent = 'Inactive';
+        els.qrUriPreview.textContent = 'Click "Generate New Challenge QR" before customer pays.';
+        showToast('Active QR Challenge cleared', 'info');
+      });
+      els.qrSvgContainer.innerHTML = renderDeterministicQrSvg('upi://pay?pa=merchant.store@okicici&am=450.00&cu=INR');
+
+      // =========================================================================
+      // LIVE BANK CREDIT LEDGER (BULK SMS & CSV AUTO-MATCHER)
+      // =========================================================================
+      function renderLedgerPills() {
+        if (state.settledCredits.length === 0) {
+          els.ledgerPillsContainer.innerHTML = '<span class="text-[#8C8477] italic">Ledger empty (0 settled credits recorded)</span>';
+          return;
+        }
+        els.ledgerPillsContainer.innerHTML = state.settledCredits
+          .map(
+            (c) =>
+              `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-heritage-600/12 text-heritage-700 dark:text-[#63BE96] border border-heritage-600/25 font-mono font-semibold animate-reveal">✓ ₹${c.amount.toFixed(2)} • ${c.utr}</span>`
+          )
+          .join('');
+      }
+
+      function ingestCreditLines(rawText, sourceLabel = 'Bank SMS') {
+        const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        let added = 0;
+
+        lines.forEach((line) => {
+          const utrMatch = line.match(/\b(\d{12})\b/);
+          const amtMatch =
+            line.match(/(?:Rs\.?|INR|₹)\s*([0-9,]+(?:\.[0-9]{1,2})?)/i) ||
+            line.match(/(?:credited|received|cr)[^\d]{0,14}([0-9,]+(?:\.[0-9]{1,2})?)/i);
+
+          if (utrMatch && amtMatch) {
+            const utr = utrMatch[1];
+            const amount = parseFloat(amtMatch[1].replace(/,/g, ''));
+            if (!isNaN(amount) && amount > 0) {
+              const existingIdx = state.settledCredits.findIndex((c) => c.utr === utr);
+              const record = { utr, amount, source: sourceLabel, raw: line };
+              if (existingIdx >= 0) {
+                state.settledCredits[existingIdx] = record;
+              } else {
+                state.settledCredits.unshift(record);
+              }
+              added++;
+            }
+          }
+        });
+
+        renderLedgerPills();
+        return added;
+      }
+
+      function animateIndexCounter(targetScore) {
+        const start = 0;
+        const duration = 680;
+        const startTime = performance.now();
+        function step(now) {
+          const progress = Math.min(1, (now - startTime) / duration);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = Math.round(start + (targetScore - start) * eased);
+          els.scoreValue.textContent = `${current}%`;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      function staggerDiagnosticPillars() {
+        const cards = document.querySelectorAll('.pillar-item');
+        cards.forEach((card, idx) => {
+          card.classList.remove('is-visible');
+          card.style.animationDelay = `${idx * 65}ms`;
+          void card.offsetWidth;
+          card.classList.add('is-visible');
+        });
+      }
+
+      els.verifyAllBtn.addEventListener('click', () => runZeroTrustEvaluation());
+      els.utrForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        runZeroTrustEvaluation();
+      });
+
+      function renderZeroTrustReport(data) {
+        els.reportEmpty.classList.add('hidden');
+        els.reportContent.classList.remove('hidden');
+
+        const score = data.composite;
+        animateIndexCounter(score);
+        staggerDiagnosticPillars();
+
+        const circumference = 213.6;
+        els.scoreRing.style.strokeDashoffset = circumference;
+        requestAnimationFrame(() => {
+          els.scoreRing.style.strokeDashoffset = circumference - (score / 100) * circumference;
+        });
+
+        let verdict = 'UNCONFIRMED — CHECK YOUR OWN BANK RECORDS FIRST';
+        let summary = 'Rule 1 Warning: Because spoof UPI apps and AI generators can produce visually clean receipts, NEVER trust a screenshot alone. Verify the credit in your own Bank Statement, UPI App History, Bank SMS, or Soundbox before releasing goods.';
+        let ringColor = 'text-amber-500';
+        let badgeClasses = 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30';
+        let tone = 'warning';
+
+        if (data.tier === 'VERIFIED_GENUINE') {
+          verdict = 'VERIFIED GENUINE — SETTLED IN BANK (100%)';
+          summary = '100% Confirmed! Receipt passed all 7 forensic checks AND matched an authoritative credit entry in your own Bank SMS / Statement Ledger.';
+          ringColor = 'text-emerald-500';
+          badgeClasses = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-400/50';
+          tone = 'verified';
+        } else if (data.tier === 'TAMPERED_OR_FAKE') {
+          verdict = 'HIGH RISK — FAKE / UNSETTLED RECEIPT (DO NOT ACCEPT)';
+          summary = 'FRAUD / REJECTION ALERT: Triggered one or more red flags (Pending/Failed status, AI/edited image texture, old payment date, payee/VPA mismatch, missing/invalid 12-digit UTR, or absent from Bank Ledger). DO NOT RELEASE GOODS!';
+          ringColor = 'text-rose-500';
+          badgeClasses = 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30';
+          tone = 'danger';
+        }
+
+        playAuditTone(tone);
+
+        els.scoreRing.setAttribute('class', `transition-all duration-700 ${ringColor}`);
+        els.verdictBadge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide border ${badgeClasses}`;
+        els.verdictBadge.textContent = verdict;
+        els.verdictSummary.textContent = summary;
+
+        els.repUtr.textContent = data.utr;
+        els.repAmount.textContent = `${data.amount} (${data.app})`;
+
+        // Pillar 1: Bank Ledger
+        els.descLedger.textContent = data.ledgerDesc;
+        els.statusLedger.textContent = data.ledgerStatus;
+        if (data.ledgerState === 'MATCHED') {
+          els.dotLedger.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          els.statusLedger.className = 'font-mono text-emerald-600 dark:text-emerald-400';
+        } else if (data.ledgerState === 'NOT_FOUND' || data.ledgerState === 'AMOUNT_MISMATCH') {
+          els.dotLedger.className = 'w-2 h-2 rounded-full bg-rose-500';
+          els.statusLedger.className = 'font-mono text-rose-600 dark:text-rose-400';
+        } else {
+          els.dotLedger.className = 'w-2 h-2 rounded-full bg-amber-500';
+          els.statusLedger.className = 'font-mono text-amber-600 dark:text-amber-400';
+        }
+
+        // Pillars 2–6
+        updatePillarUI(els.dotMeta, els.statusMeta, els.descMeta, { score: data.metaScore, desc: data.metaDesc });
+        updatePillarUI(els.dotPsp, els.statusPsp, els.descPsp, { score: data.pspScore, desc: data.pspDesc });
+        updatePillarUI(els.dotUtr, els.statusUtr, els.descUtr, { score: data.utrScore, desc: data.utrDesc });
+        updatePillarUI(els.dotEla, els.statusEla, els.descEla, { score: data.elaScore, desc: data.elaDesc });
+        updatePillarUI(els.dotTime, els.statusTime, els.descTime, { score: data.timeScore, desc: data.timeDesc });
+
+        // Pillar 7: Challenge
+        els.descChallenge.textContent = data.challengeDesc;
+        els.statusChallenge.textContent = data.challengeStatus;
+        if (data.challengeState === 'MATCHED') {
+          els.dotChallenge.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          els.statusChallenge.className = 'font-mono text-emerald-600 dark:text-emerald-400';
+        } else if (data.challengeState === 'MISMATCH') {
+          els.dotChallenge.className = 'w-2 h-2 rounded-full bg-rose-500';
+          els.statusChallenge.className = 'font-mono text-rose-600 dark:text-rose-400';
+        } else {
+          els.dotChallenge.className = 'w-2 h-2 rounded-full bg-sky-500';
+          els.statusChallenge.className = 'font-mono text-sky-600 dark:text-sky-400';
+        }
+
+        const nowTime = new Date().toTimeString().slice(0, 8);
+        els.repHash.textContent = state.currentSha256;
+        els.repScannedAt.textContent = `Audited ${nowTime}`;
+
+        state.auditLogs.unshift({
+          time: nowTime,
+          utr: data.utr,
+          amount: data.amount,
+          ledger: data.ledgerState,
+          score,
+          verdict: data.tier === 'VERIFIED_GENUINE' ? 'GENUINE 100%' : (data.tier === 'TAMPERED_OR_FAKE' ? 'FAKE / REJECT' : 'UNCONFIRMED')
+        });
+        renderAuditLogTable();
+
+        showToast(`${verdict} (${score}%)`, tone === 'verified' ? 'success' : (tone === 'danger' ? 'danger' : 'warning'));
+      }
+
+      function updatePillarUI(dotEl, statusEl, descEl, pillar) {
+        const s = pillar.score;
+        descEl.textContent = pillar.desc;
+        if (s >= 75) {
+          dotEl.className = 'w-1.5 h-1.5 rounded-full bg-heritage-600';
+          statusEl.className = 'font-mono text-[11px] text-heritage-700 dark:text-[#63BE96]';
+          statusEl.textContent = `PASS (${s}%)`;
+        } else if (s >= 45) {
+          dotEl.className = 'w-1.5 h-1.5 rounded-full bg-champagne-600';
+          statusEl.className = 'font-mono text-[11px] text-champagne-700 dark:text-champagne-400';
+          statusEl.textContent = `WARN (${s}%)`;
+        } else {
+          dotEl.className = 'w-1.5 h-1.5 rounded-full bg-oxblood-600';
+          statusEl.className = 'font-mono text-[11px] text-oxblood-700 dark:text-[#E06C7C]';
+          statusEl.textContent = `FAIL (${s}%)`;
+        }
+      }
+
+      // =========================================================================
+      // 3 BUILT-IN SAMPLE SCENARIOS (7-POINT FORENSIC SUITE)
+      // =========================================================================
+      function runDemoScenario(scenario) {
+        switchMode('receipt');
+        const canvas = els.generatorCanvas;
+        const ctx = canvas.getContext('2d');
+
+        const yearDigit = String(new Date().getFullYear()).slice(-1);
+
+        if (scenario === 'navi-upi') {
+          // 1. Demo: Genuine Navi UPI + Bank SMS (Standard 1080x2340 DPR ratio scaled 540x1170 -> set 1080x2160)
+          canvas.width = 1080;
+          canvas.height = 2160;
+          const w = canvas.width;
+          const h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const naviRrn = `${yearDigit}08492718345`;
+          ingestCreditLines(`Rs.450.00 credited to A/c XX4821 on 20-11-26 via UPI Ref No ${naviRrn} - Axis Bank`, 'Axis Bank SMS');
+
+          ctx.fillStyle = '#0c1317';
+          ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '600 32px Inter, sans-serif';
+          ctx.fillText('10:24 PM', 56, 68);
+          ctx.fillText('5G+ 88%', w - 190, 68);
+
+          ctx.beginPath();
+          ctx.arc(w / 2, 330, 86, 0, Math.PI * 2);
+          ctx.fillStyle = '#10b981';
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 68px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('✓', w / 2, 355);
+
+          ctx.fillStyle = '#34d399';
+          ctx.font = '700 36px Inter, sans-serif';
+          ctx.fillText('Paid via Navi UPI', w / 2, 480);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 104px Inter, sans-serif';
+          ctx.fillText('₹450.00', w / 2, 610);
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '500 36px Inter, sans-serif';
+          ctx.fillText('To: Metro Retail Store', w / 2, 690);
+          ctx.fillText('UPI ID: payer@naviaxis', w / 2, 750);
+
+          ctx.fillStyle = '#162026';
+          ctx.beginPath();
+          ctx.roundRect(72, 840, w - 144, 440, 42);
+          ctx.fill();
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '500 32px Inter, sans-serif';
+          ctx.fillText('UPI Ref ID / UTR', 128, 950);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '600 44px JetBrains Mono, monospace';
+          ctx.fillText(naviRrn, 128, 1020);
+
+          els.ocrApp.value = 'Navi UPI';
+          els.ocrUtr.value = naviRrn;
+          els.ocrAmount.value = '450.00';
+          els.ocrChallengeRef.value = '';
+          els.ocrTimestamp.value = getCurrentLocalDateTime();
+          els.ocrRawText.textContent = `Paid via Navi UPI\n₹450.00\nTo: Metro Retail Store\nUPI ID: payer@naviaxis\nUPI Ref ID / UTR: ${naviRrn}`;
+          state.ocrDetectedData = { rawText: els.ocrRawText.textContent, utr: naviRrn, amount: 450, hasSuccessKeyword: true };
+          state.binaryMetaAudit = { container: 'PNG', matchedSignatures: [], fileSize: 184200, fileName: 'Screenshot_NaviUPI.png' };
+
+          const img = new Image();
+          img.onload = () => {
+            state.currentSha256 = 'DEMO-NAVI-7PT-SETTLED-' + naviRrn;
+            els.loadedFileInfo.textContent = `Screenshot_NaviUPI.png • ${w} × ${h} px • 1080px DPR`;
+            processReceiptImage(img, { runLiveOcr: false, forcedFlag: null });
+          };
+          img.src = canvas.toDataURL('image/png');
+
+        } else if (scenario === 'clean-fake') {
+          // 2. Demo: Fake Navi/GPay Generator (Non-mobile 540x860 canvas + Missing Dual Google/UPI ID + Generator Metadata)
+          // Caught immediately as HIGH RISK — FAKE RECEIPT even when Bank Credit Ledger is completely empty!
+          canvas.width = 540;
+          canvas.height = 860;
+          const w = canvas.width;
+          const h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const fakeGeneratorUtr = `${yearDigit}99182736451`;
+
+          ctx.fillStyle = '#111318';
+          ctx.fillRect(0, 0, w, h);
+          ctx.beginPath();
+          ctx.arc(w / 2, 160, 44, 0, Math.PI * 2);
+          ctx.fillStyle = '#1a73e8';
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.font = '700 48px Inter, sans-serif';
+          ctx.fillText('₹1,250.00', w / 2, 260);
+          ctx.font = '500 20px Inter, sans-serif';
+          ctx.fillText('Paid to Metro Retail Store', w / 2, 305);
+
+          ctx.fillStyle = '#1c1f26';
+          ctx.beginPath();
+          ctx.roundRect(36, 380, w - 72, 200, 20);
+          ctx.fill();
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#9aa0a6';
+          ctx.font = '500 16px Inter, sans-serif';
+          ctx.fillText('UPI transaction ID', 64, 435);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '600 21px JetBrains Mono, monospace';
+          ctx.fillText(fakeGeneratorUtr, 64, 470);
+
+          els.ocrApp.value = 'GPay';
+          els.ocrUtr.value = fakeGeneratorUtr;
+          els.ocrAmount.value = '1250.00';
+          els.ocrChallengeRef.value = '';
+          els.ocrTimestamp.value = getCurrentLocalDateTime();
+          // Notice: Missing "Google transaction ID" (CICAg...) + non-mobile 540x860 DPR resolution
+          els.ocrRawText.textContent = `Google Pay\n₹1,250.00\nPaid to Metro Retail Store\nUPI transaction ID\n${fakeGeneratorUtr}`;
+          state.ocrDetectedData = { rawText: els.ocrRawText.textContent, utr: fakeGeneratorUtr, amount: 1250, hasSuccessKeyword: true };
+          state.binaryMetaAudit = { container: 'PNG', matchedSignatures: ['HTML5', 'Canvas', 'Generator'], fileSize: 64120, fileName: 'fake_gpay_prank.png' };
+
+          const img = new Image();
+          img.onload = () => {
+            state.currentSha256 = 'DEMO-SPOOF-GENERATOR-' + fakeGeneratorUtr;
+            els.loadedFileInfo.textContent = `fake_gpay_prank.png • ${w} × ${h} px • Non-Mobile Canvas`;
+            processReceiptImage(img, { runLiveOcr: false, forcedFlag: null });
+          };
+          img.src = canvas.toDataURL('image/png');
+
+        } else if (scenario === 'tampered-phonepe') {
+          // 3. Demo: Edited Amount Receipt (Spliced ₹ amount box + Photoshop chunk + missing PhonePe T-prefix ID)
+          canvas.width = 1080;
+          canvas.height = 2160;
+          const w = canvas.width;
+          const h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const dummyUtr = '123456789012';
+          ctx.fillStyle = '#170f29';
+          ctx.fillRect(0, 0, w, h);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(280, 460, 520, 148);
+          ctx.fillStyle = '#000000';
+          ctx.font = '800 92px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('₹2,500', w / 2, 564);
+
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '500 34px monospace';
+          ctx.fillText(`PhonePe UTR: ${dummyUtr}`, w / 2, 760);
+
+          els.ocrApp.value = 'PhonePe';
+          els.ocrUtr.value = dummyUtr;
+          els.ocrAmount.value = '2500.00';
+          els.ocrChallengeRef.value = '';
+          els.ocrTimestamp.value = getCurrentLocalDateTime();
+          els.ocrRawText.textContent = `PhonePe\n₹2,500\nPhonePe UTR: ${dummyUtr}`;
+          state.ocrDetectedData = { rawText: els.ocrRawText.textContent, utr: dummyUtr, amount: 2500, hasSuccessKeyword: false };
+          state.binaryMetaAudit = { container: 'JPEG', matchedSignatures: ['Photoshop'], fileSize: 142800, fileName: 'edited_amount.jpg' };
+
+          const img = new Image();
+          img.onload = () => {
+            state.currentSha256 = 'DEMO-TAMPER-PHONEPE-' + dummyUtr;
+            els.loadedFileInfo.textContent = `edited_amount.jpg • ${w} × ${h} px • EXIF Tampered`;
+            processReceiptImage(img, { runLiveOcr: false, forcedFlag: 'edited' });
+          };
+          img.src = canvas.toDataURL('image/jpeg', 0.9);
+        }
+      }
+
+      els.demoNaviUpi.addEventListener('click', () => runDemoScenario('navi-upi'));
+      els.demoCleanFake.addEventListener('click', () => runDemoScenario('clean-fake'));
+      els.demoTamperedPhonepe.addEventListener('click', () => runDemoScenario('tampered-phonepe'));
+
+      // Render Merchant Audit Log Table
+      function renderAuditLogTable() {
+        if (state.auditLogs.length === 0) {
+          els.auditLogBody.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-6 text-center text-[#8C8477]">No clearing records yet. Present a voucher or select a specimen above.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        els.auditLogBody.innerHTML = state.auditLogs.map((row) => {
+          const badgeStyle = row.score >= 95
+            ? 'bg-heritage-600/15 text-heritage-700 dark:text-[#63BE96]'
+            : row.score >= 50
+              ? 'bg-champagne-500/15 text-champagne-700 dark:text-champagne-400'
+              : 'bg-oxblood-600/15 text-oxblood-700 dark:text-[#E06C7C]';
+
+          return `
+            <tr class="hover:bg-ivory-100/70 dark:hover:bg-obsidian-850/60 transition">
+              <td class="py-2.5 px-4 font-mono text-[#6E675C] dark:text-[#9A9284]">${row.time}</td>
+              <td class="py-2.5 px-4 font-mono font-semibold">${row.utr}</td>
+              <td class="py-2.5 px-4 font-mono">${row.amount}</td>
+              <td class="py-2.5 px-4 font-mono text-[11px]">${row.ledger}</td>
+              <td class="py-2.5 px-4 font-mono font-bold">${row.score}%</td>
+              <td class="py-2.5 px-4">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${badgeStyle}">${row.verdict}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      els.copyReportBtn.addEventListener('click', () => {
+        if (els.reportContent.classList.contains('hidden')) {
+          showToast('Run a verification first to copy the report.', 'warning');
+          return;
+        }
+        const text = [
+          `UPI SHIELD 7-POINT FORENSIC AUDIT REPORT`,
+          `Verdict: ${els.verdictBadge.textContent} (Trust Score: ${els.scoreValue.textContent})`,
+          `UTR Ref: ${els.repUtr.textContent}`,
+          `Amount & PSP: ${els.repAmount.textContent}`,
+          `1. Bank Credit Ledger: ${els.statusLedger.textContent} — ${els.descLedger.textContent}`,
+          `2. Binary EXIF/PNG & DPR: ${els.statusMeta.textContent} — ${els.descMeta.textContent}`,
+          `3. PSP Dual-ID Vocabulary: ${els.statusPsp.textContent} — ${els.descPsp.textContent}`,
+          `4. NPCI 12-Digit RRN: ${els.statusUtr.textContent} — ${els.descUtr.textContent}`,
+          `5. Zone ELA & Halo Scan: ${els.statusEla.textContent} — ${els.descEla.textContent}`,
+          `6. Chronology & Stale-Time: ${els.statusTime.textContent} — ${els.descTime.textContent}`,
+          `7. Dynamic QR Challenge: ${els.statusChallenge.textContent} — ${els.descChallenge.textContent}`,
+          `SHA-256 Hash: ${els.repHash.textContent}`
+        ].join('\n');
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Zero-Trust forensic report copied to clipboard.', 'success');
+        } catch (err) {
+          showToast('Unable to copy report automatically.', 'danger');
+        }
+        document.body.removeChild(textarea);
+      });
+
+      els.printReportBtn.addEventListener('click', () => {
+        if (els.reportContent.classList.contains('hidden')) {
+          showToast('Run a verification first to print the report.', 'warning');
+          return;
+        }
+        window.print();
+      });
+
+      els.exportCsvBtn.addEventListener('click', () => {
+        if (state.auditLogs.length === 0) {
+          showToast('Audit log is empty.', 'warning');
+          return;
+        }
+        const headers = ['Time', 'UTR_Ref', 'Amount', 'Ledger_Status', 'Trust_Score', 'Verdict'];
+        const csvRows = [
+          headers.join(','),
+          ...state.auditLogs.map(r => `"${r.time}","${r.utr}","${r.amount}","${r.ledger}","${r.score}%","${r.verdict}"`)
+        ];
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `upi_shield_zerotrust_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Tamper-evident audit log exported as CSV.', 'success');
+      });
+
+      els.clearLogBtn.addEventListener('click', () => {
+        state.auditLogs = [];
+        renderAuditLogTable();
+        showToast('Session audit log cleared.', 'info');
+      });
+
+      renderAuditLogTable();
+    })();
+  </script>
+  <script>
+    (() => {
+      const intro = document.getElementById('opening-intro');
+      const skipButton = document.getElementById('opening-intro-skip');
+      if (!intro) return;
+
+      let leaving = false;
+      document.body.style.overflow = 'hidden';
+
+      const closeIntro = () => {
+        if (leaving) return;
+        leaving = true;
+        intro.classList.add('is-leaving');
+        document.body.style.overflow = '';
+        window.setTimeout(() => intro.remove(), 700);
+      };
+
+      skipButton?.addEventListener('click', closeIntro);
+      window.setTimeout(closeIntro, 3800);
+    })();
+  </script>
 </body>
 </html>
