@@ -376,6 +376,25 @@
     button, input, select, textarea {
       max-width: 100%;
     }
+    #sound-toggle-btn {
+      position: relative;
+      display: grid;
+      place-items: center;
+      align-self: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      line-height: 0;
+    }
+    #sound-toggle-btn > svg:not(.hidden) {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      transform: translate(-50%, -50%);
+    }
     @media (max-width: 639px) {
       header > div {
         min-height: 64px;
@@ -421,9 +440,9 @@
         justify-content: center;
       }
       header #sound-toggle-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
+        align-self: center;
       }
       header #kiosk-toggle-btn span,
       header #install-app-btn span {
