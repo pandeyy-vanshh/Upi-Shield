@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1C1A17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="UPI Shield" />
   <title>UPI Shield — Private Settlement & Forensic Verification Ledger</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Tesseract.js v5 CDN for Client-Side Receipt OCR -->
@@ -449,6 +456,15 @@
 
       <!-- Right Utility Controls -->
       <div class="flex items-center gap-2">
+        <button id="install-app-btn" type="button" title="Install UPI Shield App" class="px-3 py-2 rounded-lg bg-[#1C1A17] hover:bg-[#2D2A25] dark:bg-champagne-500 dark:hover:bg-champagne-400 text-[#FDFBF7] dark:text-[#14120F] border border-champagne-600/40 text-xs font-semibold tracking-wide flex items-center gap-1.5 shadow-2xs transition-all active:scale-[0.98]">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3v12" />
+            <polyline points="7 10 12 15 17 10" />
+            <path d="M5 21h14" />
+          </svg>
+          <span class="hidden sm:inline">Install App</span>
+        </button>
+
         <button id="kiosk-toggle-btn" type="button" class="px-3 py-2 rounded-lg bg-ivory-100 hover:bg-ivory-200/80 dark:bg-obsidian-900 dark:hover:bg-obsidian-850 text-[#3B362F] dark:text-[#DFD9CE] border border-ivory-300 dark:border-[#2C2821] text-xs font-medium flex items-center gap-1.5 transition">
           <svg class="w-3.5 h-3.5 text-champagne-600 dark:text-champagne-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
             <rect x="2" y="3" width="20" height="14" rx="2" />
@@ -1306,6 +1322,7 @@
 
       const els = {
         themeToggle: document.getElementById('theme-toggle'),
+        installAppBtn: document.getElementById('install-app-btn'),
         kioskToggleBtn: document.getElementById('kiosk-toggle-btn'),
         exitKioskBtn: document.getElementById('exit-kiosk-btn'),
         kioskBanner: document.getElementById('kiosk-banner'),
@@ -1523,6 +1540,52 @@
 
       // Theme, Kiosk & Sound Controls
       els.themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
+      let deferredInstallPrompt = null;
+      const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        els.installAppBtn?.classList.remove('hidden');
+      });
+
+      els.installAppBtn?.addEventListener('click', async () => {
+        if (isStandalone) {
+          showToast('UPI Shield is already installed.', 'success');
+          return;
+        }
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          return;
+        }
+        if (isIos) {
+          showToast('On iPhone/iPad: tap Share, then Add to Home Screen.', 'info');
+          return;
+        }
+        showToast('Open the browser menu and choose Install App or Add to Home Screen.', 'info');
+      });
+
+      if (isStandalone) {
+        els.installAppBtn?.classList.add('hidden');
+      }
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        els.installAppBtn?.classList.add('hidden');
+        showToast('UPI Shield installed successfully.', 'success');
+      });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js').catch(() => {
+            // Installation remains available while the offline cache is optional.
+          });
+        });
+      }
 
       els.kioskToggleBtn.addEventListener('click', () => {
         document.body.classList.add('kiosk-active');
